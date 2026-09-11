@@ -1,19 +1,53 @@
-import React from 'react'
-import { Route, Routes } from 'react-router-dom'
-import Home from './components/pages/Home'
-import Login from './components/pages/Login'
-import Signup from './components/pages/Signup'
+import React, { useContext } from "react";
+import { Route, Routes, Navigate } from "react-router-dom";
+
+import Home from "./pages/Home.jsx";
+import Login from "./pages/Login.jsx";
+import Signup from "./pages/Signup.jsx";
+
+import { userContextData } from "./context/UserContext.jsx";
 
 const App = () => {
-  return (
-    <>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-      </Routes>
-    </>
-  )
-}
 
-export default App
+  const { userData, loading } = useContext(userContextData);
+
+  // Don't render routes until we know the user's login status
+  if (loading) {
+    return <div>...</div>;
+  }
+
+  return (
+    <Routes>
+
+      <Route
+        path="/"
+        element={
+          userData
+            ? <Home />
+            : <Navigate to="/login" replace />
+        }
+      />
+
+      <Route
+        path="/login"
+        element={
+          userData
+            ? <Navigate to="/" replace />
+            : <Login />
+        }
+      />
+
+      <Route
+        path="/signup"
+        element={
+          userData
+            ? <Navigate to="/" replace />
+            : <Signup />
+        }
+      />
+
+    </Routes>
+  );
+};
+
+export default App;

@@ -1,16 +1,19 @@
 import React, { useState, useContext } from "react";
-import logo from "../../assets/logo.png";
-import { Link } from "react-router-dom";
-import { AuthContextData } from "../../context/AuthContext.jsx";
+import logo from "../assets/logo.png";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContextData } from "../context/AuthContext.jsx";
+import { userContextData } from "../context/UserContext.jsx";
 import axios from "axios";
 
 function Login() {
     const [showPassword, setShowPassword] = useState(false);
+    let { userData, setUserData } = useContext(userContextData);
     let { serverUrl } = useContext(AuthContextData);
     let [email, setEmail] = useState("");
     let [password, setPassword] = useState("");
     let [loading, setLoading] = useState(false);
     let [error, setError] = useState("");
+    let navigate = useNavigate();
     let handleLogin = async (e) => {
         try {
             e.preventDefault();
@@ -19,6 +22,9 @@ function Login() {
                 email,
                 password,
             }, { withCredentials: true });
+            setError("");
+            setUserData(result.data);
+            navigate("/");
             setEmail("");
             setPassword("");
             setLoading(false);

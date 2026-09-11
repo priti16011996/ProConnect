@@ -4,6 +4,7 @@ import connectDB from "./config/db.js"; // Import the connectDB function
 import authRouter from "./routes/auth.route.js"; // Import the authRouter
 import cookieParser from "cookie-parser"; // Import cookie-parser
 import cors from "cors"; // Import cors
+import userRouter from "./routes/user.route.js";
 
 dotenv.config();
 
@@ -24,3 +25,4 @@ app.listen(process.env.PORT, () => {
 });
 
 app.use("/v1/api/auth", authRouter); // Use the authRouter for authentication routes
+app.use("/v1/api/user", userRouter); // Use the userRouter for user-related routes

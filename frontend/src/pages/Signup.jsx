@@ -1,12 +1,15 @@
 
 import React, { useState, useContext } from "react";
-import logo from "../../assets/logo.png";
-import { Link } from "react-router-dom";
-import { AuthContextData } from "../../context/AuthContext.jsx";
+import logo from "../assets/logo.png";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContextData } from "../context/AuthContext.jsx";
 import axios from "axios";
+import { userContextData } from "../context/UserContext.jsx";
 function Signup() {
     const [showPassword, setShowPassword] = useState(false);
+    let navigate = useNavigate();
     let { serverUrl } = useContext(AuthContextData);
+    let { userData, setUserData } = useContext(userContextData);
     let [firstName, setFirstName] = useState("");
     let [lastName, setLastName] = useState("");
     let [userName, setUserName] = useState("");
@@ -26,6 +29,9 @@ function Signup() {
                 email,
                 password,
             }, { withCredentials: true });
+            setUserData(result.data);
+            navigate("/");
+            setError("");
             setFirstName("");
             setLastName("");
             setUserName("");
