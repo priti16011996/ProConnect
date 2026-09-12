@@ -53,6 +53,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["Male", "Female", "Other"],
     },
+    profileImage: {
+      type: String,
+      default: "",
+    },
     experience: [
       {
         title: { type: String },

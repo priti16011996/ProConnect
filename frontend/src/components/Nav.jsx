@@ -6,10 +6,29 @@ import { FaUserFriends } from "react-icons/fa";
 import { MdNotificationsActive } from "react-icons/md";
 import profile from '../assets/profile.png'
 import { userContextData } from '../context/UserContext';
+import { AuthContextData } from '../context/AuthContext';
+import axios from 'axios';
+
 
 function Nav() {
-    const { userData } = useContext(userContextData);
-    console.log(userData.user.firstName);
+    const { userData, setUserData } = useContext(userContextData);
+    const [showPopup, setShowPopup] = useState(false);
+    let { serverUrl } = useContext(AuthContextData);
+
+    const handleLogout = async () => {
+        try {
+            let result = await axios.get(`${serverUrl}/v1/api/auth/logout`, { withCredentials: true });
+            setUserData(null);
+            console.log(result);
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const handleProfilePopup = () => {
+        setShowPopup(prev => !prev);
+    };
 
     return (
         <div className="w-full h-[60px] bg-white shadow-lg fixed top-0 flex justify-start items-center z-50">
@@ -18,11 +37,11 @@ function Nav() {
                 <img
                     src={logo}
                     alt="Logo"
-                    className="w-[85px] h-[85px] object-contain"
+                    className="w-[85px] h-[85px] object-contain cursor-pointer"
                 />
 
 
-                <div className={`flex items-center bg-[#E5E4E2] rounded px-4}`}>
+                <div className={`flex items-center bg-[#E5E4E2] rounded-full px-4}`}>
                     <IoSearch className="w-[25px] h-[25px] ml-2" />
 
                     <form>
@@ -34,20 +53,36 @@ function Nav() {
                     </form>
                 </div>
             </div>
-            <div className="flex ml-auto items-center gap-[20px]">
-                <div className='w-[320px] h-[300px] bg-white absolute shadow-lg top-[63px]  '>
-                    <div className='flex justify-center items-center'>
-                        <img
-                            src={profile}
-                            alt="profile"
-                            className="w-[55px] h-[55px] object-contain"
-                        />
-                    </div>
-                    <div className='flex justify-center items-center'>
-                        <span>{userData.user.firstName} {userData.user.lastName}</span>
-                    </div>
+            <div className="flex ml-auto items-center gap-[20px] ">
+                {
+                    showPopup &&
+                    <div className='w-[320px] min-h-[300px] bg-white absolute shadow-lg top-[63px] p-[5px]'>
+                        <div className='flex justify-center items-center cursor-pointer'>
+                            <img
+                                src={profile}
+                                alt="profile"
+                                className="w-[55px] h-[55px] object-contain"
+                            />
+                        </div>
+                        <div className='flex justify-center items-center'>
+                            <span>{userData.user.firstName} {userData.user.lastName}</span>
+                        </div>
+                        <div>
+                            <button className='flex justify-center items-center w-[100%] h-[40px]  rounded-full border-[2px] mt-3 border-[#a4ccdd] text-[#a4ccdd]'>View Profile</button>
+                        </div>
+                        <div className='w-full h-[1px] bg-gray-700 mt-3' ></div>
+                        <div className="flex justify-start items-center gap-[10px] p-3">
+                            <FaUserFriends className='w-[25px] h-[25px]' />
+                            <div>My Network</div>
+                        </div>
+                        <div>
+                            <button className='flex justify-center items-center w-[100%] h-[40px]  rounded-full border-[2px]
+                         mt-3 border-[#ec4545] text-[#ec4545] cursor-pointer' onClick={handleLogout}>Logout</button>
+                        </div>
 
-                </div>
+                    </div>
+                }
+
                 <div className="lg:flex flex-col items-center hidden">
                     <IoHome />
                     <div>Home</div>
@@ -62,12 +97,13 @@ function Nav() {
                     <MdNotificationsActive />
                     <div className='hidden md:block'>Notifications</div>
                 </div>
-
-                <img
-                    src={profile}
-                    alt="profile"
-                    className="w-[55px] h-[55px] object-contain"
-                />
+                <div className="flex flex-col items-center cursor-pointer" onClick={handleProfilePopup}>
+                    <img
+                        src={profile}
+                        alt="profile"
+                        className="w-[55px] h-[55px] object-contain"
+                    />
+                </div>
             </div>
 
         </div >
