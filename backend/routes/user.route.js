@@ -4,13 +4,12 @@ import {
   uploadProfileImage,
 } from "../controllers/user.controller.js";
 import authenticateToken from "../middlewares/authenticateToken.js";
-import upload from "../middleware/upload.js";
+import upload from "../middlewares/upload.js";
 const userRouter = express.Router();
 
 userRouter.get("/currentUser", authenticateToken, loggedInUser);
 userRouter.post(
   "/profile/image",
-  authMiddleware,
   upload.single("profileImage"),
   uploadProfileImage,
 );

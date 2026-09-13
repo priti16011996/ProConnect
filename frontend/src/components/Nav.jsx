@@ -97,7 +97,7 @@ function Nav() {
                     <MdNotificationsActive />
                     <div className='hidden md:block'>Notifications</div>
                 </div>
-                <div className="flex flex-col items-center cursor-pointer" onClick={handleProfilePopup}>
+                <div className="flex flex-col items-center cursor-pointer mr-2" onClick={handleProfilePopup}>
                     <img
                         src={profile}
                         alt="profile"
