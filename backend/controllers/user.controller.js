@@ -16,6 +16,7 @@ export let loggedInUser = async (req, res) => {
   }
 };
 
+export const updateProfile = async (req, res) => {};
 export const uploadProfileImage = async (req, res) => {
   let localFilePath;
 

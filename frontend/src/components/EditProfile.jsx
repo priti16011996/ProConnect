@@ -3,6 +3,7 @@ import { userContextData } from "../context/UserContext";
 import { CiCamera } from "react-icons/ci";
 import { RxCross2 } from "react-icons/rx";
 import { GoPlusCircle } from "react-icons/go";
+import profile from '../assets/profile.png'
 
 function EditProfile() {
 
@@ -46,7 +47,10 @@ function EditProfile() {
         company: "",
         description: ""
     });
-
+    const [frontendProfilePic, setFrontendProfilePic] = useState(userData?.user?.profileImage || profile);
+    const [backendProfilePic, setBackendProfilePic] = useState(null);
+    const [frontendCoverPic, setFrontendCoverPic] = useState(userData?.user?.coverImage);
+    const [backendCoverPic, setBackendCoverPic] = useState(null);
     let userProfileRef = useRef();
     let useCoverImgRef = useRef();
     const handleAddExperience = () => {
@@ -170,6 +174,20 @@ function EditProfile() {
         );
     };
 
+    const handleProfileImage = (event) => {
+        let file = event.target.files[0];
+        if (!file) return;
+        setFrontendProfilePic(URL.createObjectURL(file));
+        setBackendProfilePic(file);
+    }
+
+    const handleCoverImage = (event) => {
+        let file = event.target.files[0];
+        if (!file) return;
+        setFrontendCoverPic(URL.createObjectURL(file));
+        setBackendCoverPic(file);
+    }
+
     return (
         <div className="fixed inset-0 z-[1000] flex justify-center items-center">
 
@@ -203,28 +221,40 @@ function EditProfile() {
 
 
                 {/* Cover */}
-                <div className="relative w-full h-[120px] bg-[#838383]">
+                <div
+                    className="relative w-full h-[120px] bg-gray-300 cursor-pointer"
+                    onClick={() => useCoverImgRef.current.click()}
+                >
+                    {frontendCoverPic && <img
+                        src={frontendCoverPic}
+                        alt=""
+                        className="w-full h-full object-cover"
+                    />}
 
                     <CiCamera
-                        className="absolute right-4 top-4 text-white cursor-pointer"
+                        className="absolute right-4 top-4 text-white z-10"
                         size={25}
                     />
-
                 </div>
 
 
                 {/* Profile Image */}
-                <div className="relative flex justify-center">
-
-                    <div className="absolute -top-[45px] w-[90px] h-[90px] rounded-full bg-[#ded8d8] border-4 border-white">
+                <div
+                    className="relative flex justify-center cursor-pointer"
+                    onClick={() => userProfileRef.current.click()}
+                >
+                    <div className="absolute top-[-35px] w-[90px] h-[90px] rounded-full bg-gray-200 border-4 border-white overflow-hidden">
+                        <img
+                            src={frontendProfilePic}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                        />
                     </div>
-
 
                     {/* Plus Icon */}
                     <GoPlusCircle
                         className="absolute left-[274px] bg-[#438ac8] rounded-full text-white w-[22px] h-[22px] cursor-pointer"
                     />
-
                 </div>
 
 
@@ -233,8 +263,8 @@ function EditProfile() {
                     onSubmit={handleSubmit}
                     className="px-6 pt-[65px] pb-6"
                 >
-                    <input type="file" accept="image/*" ref={userProfileRef} hidden />
-                    <input type="file" accept="image/*" ref={useCoverImgRef} hidden />
+                    <input type="file" accept="image/*" ref={userProfileRef} hidden onChange={handleProfileImage} />
+                    <input type="file" accept="image/*" ref={useCoverImgRef} hidden onChange={handleCoverImage} />
 
                     {/* First Name */}
                     <div className="mb-4">
