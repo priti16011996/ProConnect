@@ -31,7 +31,7 @@ function Nav() {
     };
 
     return (
-        <div className="w-full h-[60px] bg-white shadow-lg fixed top-0 flex justify-start items-center z-50">
+        <div className="w-full h-[60px] bg-white shadow-lg fixed top-0 flex justify-start items-center z-50 left-0">
 
             <div className="flex items-center gap-[10px]">
                 <img

@@ -42,8 +42,8 @@ const userSchema = new mongoose.Schema(
         college: { type: String },
         degree: { type: String },
         fieldOfStudy: { type: String },
-        startYear: { type: Number },
-        endYear: { type: Number },
+        startDate: { type: String },
+        endDate: { type: String },
       },
     ],
     location: {

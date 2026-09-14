@@ -4,6 +4,7 @@ import { AuthContextData } from './AuthContext.jsx';
 export let userContextData = createContext();
 function UserContext({ children }) {
     let [userData, setUserData] = useState(null);
+    let [edit, setEdit] = useState(false);
     const [loading, setLoading] = useState(true);
     let { serverUrl } = useContext(AuthContextData);
     console.log("serverUrl", serverUrl);
@@ -33,7 +34,9 @@ function UserContext({ children }) {
     let value = {
         userData,
         setUserData,
-        loading
+        loading,
+        edit,
+        setEdit
     }
     return (
         <div>

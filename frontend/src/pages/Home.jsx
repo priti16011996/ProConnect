@@ -1,33 +1,90 @@
-import React, { useContext } from 'react'
-import Nav from '../components/Nav'
+import React, { useContext } from "react";
+import Nav from "../components/Nav";
 import { GoPlusCircle } from "react-icons/go";
-import { userContextData } from '../context/UserContext';
+import { userContextData } from "../context/UserContext";
 import { CiCamera } from "react-icons/ci";
+import { BsPencil } from "react-icons/bs";
+import EditProfile from "../components/EditProfile";
+
 function Home() {
-    const { userData, setUserData } = useContext(userContextData);
+    const {
+        userData,
+        setUserData,
+        edit,
+        setEdit
+    } = useContext(userContextData);
+
     return (
-        <div className='w-fullmin-h-[100vh] bg-[#E5E4E2] flex justify-center items-start gap-[20px] px-[20px] flex-col lg:flex-row'>
+        <div className="w-full min-h-screen bg-[#E5E4E2] flex justify-center items-start gap-[20px] px-[20px] flex-col lg:flex-row">
+
+            {/* Edit Profile Popup */}
+            {edit && <EditProfile />}
+
+            {/* Navbar */}
             <Nav />
-            <div className='w-full lg:w-[25%] min-h-[300px]  flex-col lg:flex-row  bg-[white] shadow-lg mt-[80px]'>
-                <div className='w-full h-[20vh] bg-[#838383]'>
-                    <CiCamera className='relative left-[678px] top-[15px] w-[20px] h-[20px] ' />
+
+            {/* Left Section */}
+            <div className="w-full lg:w-[25%] min-h-[300px] bg-white shadow-lg mt-[80px] p-3 relative">
+
+                {/* Cover */}
+                <div className="w-full h-[20vh] bg-[#838383] relative">
+
+                    <CiCamera
+                        className="absolute right-[15px] top-[15px] w-[25px] h-[25px] cursor-pointer"
+                    />
+
                 </div>
-                <div className='absolute rounded-full bg-[#ded8d8] w-[90px] h-[90px] top-[25vh] ml-6'></div>
-                <GoPlusCircle className='absolute left-[118px] bg-[#438ac8] rounded-full text-[white] w-[20px] h-[20px]' />
-                <div className='flex justify-start items-start relative top-[45px] left-[27px]'>
-                    <span>{userData.user.firstName} {userData.user.lastName}</span>
+
+                {/* Profile Image */}
+                <div className="absolute rounded-full bg-[#ded8d8] w-[90px] h-[90px] top-[110px] left-[30px] border-4 border-white">
                 </div>
-                <div className='flex justify-start items-start relative top-[45px] left-[27px]'>
-                    <span>{userData.user.location}</span>
+
+                {/* Plus Icon */}
+                <GoPlusCircle
+                    className="absolute left-[100px] top-[150px] bg-[#438ac8] rounded-full text-white w-[22px] h-[22px]"
+                />
+
+                {/* User Name */}
+                <div className="mt-[55px] ml-[27px]">
+                    <span className="font-semibold text-lg">
+                        {userData?.user?.firstName}{" "}
+                        {userData?.user?.lastName}
+                    </span>
                 </div>
-                <div className='mt-[60px]'>
-                    <button className='flex justify-center items-center w-[100%] h-[40px]  rounded-full border-[2px] mt-3 border-[#a4ccdd] text-[#a4ccdd]'>View Profile</button>
+
+                {/* Location */}
+                <div className="ml-[27px] mt-1">
+                    <span className="text-gray-500">
+                        {userData?.user?.location}
+                    </span>
                 </div>
+
+                {/* Edit Profile */}
+                <div className="mt-[30px]">
+
+                    <button
+                        onClick={() => setEdit(true)}
+                        className="flex justify-center items-center w-full h-[40px] rounded-full border-2 border-[#a4ccdd] text-[#438ac8] hover:bg-[#eaf6fb] transition"
+                    >
+                        Edit Profile
+
+                        <BsPencil className="ml-3" />
+                    </button>
+
+                </div>
+
             </div>
-            <div className='w-full lg:w-[50%] min-h-[300px]  flex-col lg:flex-row  bg-[white] shadow-lg lg:mt-[80px]'></div>
-            <div className='w-full lg:w-[25%] min-h-[300px]  flex-col lg:flex-row  bg-[white] shadow-lg lg:mt-[80px]'></div>
+
+            {/* Middle Section */}
+            <div className="w-full lg:w-[50%] min-h-[300px] bg-white shadow-lg lg:mt-[80px]">
+            </div>
+
+            {/* Right Section */}
+            <div className="w-full lg:w-[25%] min-h-[300px] bg-white shadow-lg lg:mt-[80px]">
+            </div>
+
         </div>
-    )
+    );
 }
 
-export default Home
+export default Home;
