@@ -27,16 +27,16 @@ function Home() {
             <div className="w-full lg:w-[25%] min-h-[300px] bg-white shadow-lg mt-[80px] p-3 relative">
 
                 {/* Cover */}
-                <div className="w-full h-[20vh] bg-[#838383] relative">
-
+                <div className="w-full h-[20vh] bg-[#838383] relative" onClick={() => setEdit(true)}>
                     <CiCamera
-                        className="absolute right-[15px] top-[15px] w-[25px] h-[25px] cursor-pointer"
+                        className="absolute right-[15px] top-[15px] w-[25px] h-[25px] cursor-pointer text-[white]"
                     />
-
+                    <img src={userData?.user?.coverImage} className=" w-full h-[20vh]" />
                 </div>
 
                 {/* Profile Image */}
-                <div className="absolute rounded-full bg-[#ded8d8] w-[90px] h-[90px] top-[110px] left-[30px] border-4 border-white">
+                <div className="absolute rounded-full bg-[#ded8d8] w-[90px] h-[90px] top-[110px] left-[30px] border-4 border-white" onClick={() => setEdit(true)}>
+                    <img src={userData?.user?.profileImage} className="w-full rounded-full" />
                 </div>
 
                 {/* Plus Icon */}
@@ -51,7 +51,12 @@ function Home() {
                         {userData?.user?.lastName}
                     </span>
                 </div>
-
+                {/* Headline */}
+                <div className="ml-[27px] mt-1">
+                    <span className="text-gray-500">
+                        {userData?.user?.headline}
+                    </span>
+                </div>
                 {/* Location */}
                 <div className="ml-[27px] mt-1">
                     <span className="text-gray-500">

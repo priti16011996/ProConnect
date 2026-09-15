@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import fs from "fs/promises";
 import cloudinary from "../config/cloudinary.js";
+import { uploadOnCloudinary } from "../middlewares/upload.js";
 export let loggedInUser = async (req, res) => {
   try {
     const userId = req.userId;
@@ -16,7 +17,58 @@ export let loggedInUser = async (req, res) => {
   }
 };
 
-export const updateProfile = async (req, res) => {};
+export const updateProfile = async (req, res) => {
+  try {
+    let { firstName, lastName, headline, location, email, userName, gender } =
+      req.body;
+    let skills = req.body.skills ? JSON.parse(req.body.skills) : [];
+    let education = req.body.education ? JSON.parse(req.body.education) : [];
+    let experience = req.body.experience ? JSON.parse(req.body.experience) : [];
+
+    let profileImage;
+    let coverImage;
+
+    console.log(req.files);
+    if (req.files?.profileImage?.[0]) {
+      const result = await uploadOnCloudinary(req.files.profileImage[0].path);
+
+      profileImage = result?.secure_url;
+    }
+
+    if (req.files?.coverImage?.[0]) {
+      const result = await uploadOnCloudinary(req.files.coverImage[0].path);
+
+      coverImage = result?.secure_url;
+    }
+
+    let updatedUserData = await User.findByIdAndUpdate(
+      req.userId,
+      {
+        firstName,
+        lastName,
+        headline,
+        location,
+        email,
+        userName,
+        gender,
+        profileImage,
+        coverImage,
+        skills,
+        education,
+        experience,
+      },
+      { new: true },
+    ).select("-password");
+    console.log("User updated data", updatedUserData);
+    res.status(200).json({
+      message: "User Profile updated Successfully",
+      user: updatedUserData,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "failed to update user profile data" });
+  }
+};
 export const uploadProfileImage = async (req, res) => {
   let localFilePath;
 

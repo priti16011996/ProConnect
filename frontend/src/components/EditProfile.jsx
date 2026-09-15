@@ -1,9 +1,11 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useRef, useState, useEffect } from "react";
 import { userContextData } from "../context/UserContext";
 import { CiCamera } from "react-icons/ci";
 import { RxCross2 } from "react-icons/rx";
 import { GoPlusCircle } from "react-icons/go";
 import profile from '../assets/profile.png'
+import axios from "axios";
+import { AuthContextData } from "../context/AuthContext.jsx";
 
 function EditProfile() {
 
@@ -12,6 +14,8 @@ function EditProfile() {
         setUserData,
         setEdit
     } = useContext(userContextData);
+    console.log("UserData", userData);
+    const { serverUrl } = useContext(AuthContextData);
 
     const [formData, setFormData] = useState({
         firstName: userData?.user?.firstName || "",
@@ -20,6 +24,7 @@ function EditProfile() {
         userName: userData?.user?.userName || "",
         location: userData?.user?.location || "",
         gender: userData?.user?.gender || "",
+        headline: userData?.user?.headline || "",
     });
 
     // New skill input
@@ -53,6 +58,7 @@ function EditProfile() {
     const [backendCoverPic, setBackendCoverPic] = useState(null);
     let userProfileRef = useRef();
     let useCoverImgRef = useRef();
+
     const handleAddExperience = () => {
         if (
             !newExperience.title.trim() ||
@@ -123,25 +129,6 @@ function EditProfile() {
         );
     };
 
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        setUserData((prev) => ({
-            ...prev,
-
-            user: {
-                ...prev.user,
-                ...formData,
-                skills: skills,
-                education: education,
-                experience: experience
-            }
-        }));
-
-        setEdit(false);
-    };
-
     const handleAddEducation = () => {
 
         if (
@@ -187,6 +174,69 @@ function EditProfile() {
         setFrontendCoverPic(URL.createObjectURL(file));
         setBackendCoverPic(file);
     }
+    const handleUpdateProfile = async (e) => {
+        e.preventDefault();
+
+        try {
+            const formdata = new FormData();
+
+            // Text fields
+            formdata.append("firstName", formData.firstName);
+            formdata.append("lastName", formData.lastName);
+            formdata.append("userName", formData.userName);
+            formdata.append("email", formData.email);
+            formdata.append("gender", formData.gender);
+            formdata.append("location", formData.location);
+            formdata.append("headline", formData.headline);
+
+            // Arrays
+            formdata.append("skills", JSON.stringify(skills));
+            formdata.append("education", JSON.stringify(education));
+            formdata.append("experience", JSON.stringify(experience));
+
+            // Profile image
+            if (backendProfilePic) {
+                formdata.append("profileImage", backendProfilePic);
+            }
+
+            // Cover image
+            if (backendCoverPic) {
+                formdata.append("coverImage", backendCoverPic);
+            }
+
+            // Debug FormData
+            for (const [key, value] of formdata.entries()) {
+                console.log(key, value);
+            }
+            console.log("Client Site Data :", formdata);
+
+            const result = await axios.put(
+                `${serverUrl}/v1/api/user/updateProfile`,
+                formdata,
+                {
+                    withCredentials: true,
+                }
+            );
+
+            const updatedUser = result.data.user;
+
+            console.log("UPDATED USER:", updatedUser);
+
+            setUserData((prev) => ({
+                ...prev,
+                user: updatedUser
+            }));
+
+            setEdit(false);
+        } catch (error) {
+            console.error(
+                "Update profile error:",
+                error.response?.data || error.message
+            );
+        }
+    };
+
+
 
     return (
         <div className="fixed inset-0 z-[1000] flex justify-center items-center">
@@ -260,7 +310,7 @@ function EditProfile() {
 
                 {/* Form */}
                 <form
-                    onSubmit={handleSubmit}
+                    onSubmit={handleUpdateProfile}
                     className="px-6 pt-[65px] pb-6"
                 >
                     <input type="file" accept="image/*" ref={userProfileRef} hidden onChange={handleProfileImage} />
@@ -334,6 +384,22 @@ function EditProfile() {
                             onChange={handleChange}
                             className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
                         />
+
+                    </div>
+                    {/* Heading */}
+                    <div className="mb-4">
+
+                        <label className="block text-sm font-medium mb-1">
+                            Heading
+                        </label>
+
+                        <textarea
+                            type="text"
+                            name="headline"
+                            value={formData.headline}
+                            onChange={handleChange}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
+                        >{formData.headline}</textarea>
 
                     </div>
                     {/* Username */}
@@ -732,7 +798,7 @@ function EditProfile() {
                         <button
                             type="button"
                             onClick={() => setEdit(false)}
-                            className="px-5 py-2 border rounded-full"
+                            className="px-5 py-2 mt-2 border-2 border-[#438ac8] text-[#438ac8] rounded-full font-semibold hover:bg-[#e8f4fb]"
                         >
                             Cancel
                         </button>
@@ -740,9 +806,9 @@ function EditProfile() {
 
                         <button
                             type="submit"
-                            className="px-6 py-2 bg-[#438ac8] text-white rounded-full"
+                            className="px-5 py-2 mt-2 border-2 bg-[#438ac8] text-[white] rounded-full"
                         >
-                            Save
+                            Update
                         </button>
 
                     </div>

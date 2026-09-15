@@ -1,6 +1,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { v2 as cloudinary } from "cloudinary";
 
 const uploadDir = "uploads";
 
@@ -41,5 +42,31 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024, // 5MB
   },
 });
+
+export const uploadOnCloudinary = async (localFilePath) => {
+  try {
+    if (!localFilePath) {
+      return null;
+    }
+
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: "auto",
+    });
+
+    // Delete local file after successful Cloudinary upload
+    fs.unlinkSync(localFilePath);
+
+    return response;
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
+
+    // Delete local file even if upload fails
+    if (fs.existsSync(localFilePath)) {
+      fs.unlinkSync(localFilePath);
+    }
+
+    return null;
+  }
+};
 
 export default upload;
