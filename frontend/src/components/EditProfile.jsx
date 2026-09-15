@@ -29,6 +29,7 @@ function EditProfile() {
 
     // New skill input
     const [newSkills, setNewSkills] = useState("");
+    const [updating, setUpdating] = useState(false);
 
     // Existing skills from database
     const [skills, setSkills] = useState(
@@ -178,6 +179,7 @@ function EditProfile() {
         e.preventDefault();
 
         try {
+            setUpdating(true);
             const formdata = new FormData();
 
             // Text fields
@@ -226,9 +228,10 @@ function EditProfile() {
                 ...prev,
                 user: updatedUser
             }));
-
+            setUpdating(false);
             setEdit(false);
         } catch (error) {
+            setUpdating(false);
             console.error(
                 "Update profile error:",
                 error.response?.data || error.message
@@ -807,8 +810,8 @@ function EditProfile() {
                         <button
                             type="submit"
                             className="px-5 py-2 mt-2 border-2 bg-[#438ac8] text-[white] rounded-full"
-                        >
-                            Update
+                            disabled={updating}>
+                            {updating ? "Updating..." : "Update"}
                         </button>
 
                     </div>

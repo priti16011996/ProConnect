@@ -57,11 +57,11 @@ function Nav() {
                 {
                     showPopup &&
                     <div className='w-[320px] min-h-[300px] bg-white absolute shadow-lg top-[63px] p-[5px]'>
-                        <div className='flex justify-center items-center cursor-pointer'>
+                        <div className='w-12 h-12 flex justify-center items-center cursor-pointer ml-[130px]'>
                             <img
-                                src={profile}
+                                src={userData?.user?.profileImage || profile}
                                 alt="profile"
-                                className="w-[55px] h-[55px] object-contain"
+                                className="w-full h-full rounded-full object-cover"
                             />
                         </div>
                         <div className='flex justify-center items-center'>
@@ -97,11 +97,11 @@ function Nav() {
                     <MdNotificationsActive />
                     <div className='hidden md:block'>Notifications</div>
                 </div>
-                <div className="flex flex-col items-center cursor-pointer mr-2" onClick={handleProfilePopup}>
+                <div className="w-12 h-12 flex flex-col items-center cursor-pointer mr-2" onClick={handleProfilePopup}>
                     <img
-                        src={profile}
+                        src={userData?.user?.profileImage || profile}
                         alt="profile"
-                        className="w-[55px] h-[55px] object-contain"
+                        className=" w-full h-full rounded-full object-cover"
                     />
                 </div>
             </div>

@@ -5,6 +5,7 @@ import { userContextData } from "../context/UserContext";
 import { CiCamera } from "react-icons/ci";
 import { BsPencil } from "react-icons/bs";
 import EditProfile from "../components/EditProfile";
+import profile from '../assets/profile.png'
 
 function Home() {
     const {
@@ -31,12 +32,12 @@ function Home() {
                     <CiCamera
                         className="absolute right-[15px] top-[15px] w-[25px] h-[25px] cursor-pointer text-[white]"
                     />
-                    <img src={userData?.user?.coverImage} className=" w-full h-[20vh]" />
+                    <img src={userData?.user?.coverImage || ""} className=" w-full h-[20vh]" />
                 </div>
 
                 {/* Profile Image */}
                 <div className="absolute rounded-full bg-[#ded8d8] w-[90px] h-[90px] top-[110px] left-[30px] border-4 border-white" onClick={() => setEdit(true)}>
-                    <img src={userData?.user?.profileImage} className="w-full rounded-full" />
+                    <img src={userData?.user?.profileImage || profile} className="w-full h-full rounded-full object-cover" />
                 </div>
 
                 {/* Plus Icon */}
