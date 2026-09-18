@@ -1,43 +1,52 @@
 import mongoose from "mongoose";
-import User from "./user.model.js";
 
 const postSchema = mongoose.Schema(
   {
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      require: true,
+      required: true,
     },
+
     description: {
       type: String,
       default: "",
     },
+
     image: {
       type: String,
       default: "",
     },
+
     like: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       },
     ],
+
     comment: [
       {
-        content: { type: String },
+        content: {
+          type: String,
+        },
+
         user: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
         },
       },
     ],
-    createdAt: {
-      type: Date,
-      default: Date.now(),
-    },
   },
-  { timestamp: true },
+  {
+    timestamps: true,
+  },
 );
+
+postSchema.index({
+  createdAt: -1,
+  _id: -1,
+});
 
 const POST = mongoose.model("POST", postSchema);
 

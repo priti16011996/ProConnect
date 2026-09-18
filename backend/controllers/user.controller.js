@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+
 import fs from "fs/promises";
 import cloudinary from "../config/cloudinary.js";
 import { uploadOnCloudinary } from "../middlewares/upload.js";
