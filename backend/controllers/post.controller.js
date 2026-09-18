@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import { uploadOnCloudinary } from "../middlewares/upload.js";
+import POST from "../models/post.model.js";
 
 export const createPost = async (req, res) => {
   try {
@@ -9,13 +10,13 @@ export const createPost = async (req, res) => {
     if (req.file) {
       let image = await uploadOnCloudinary(req.file.path);
       console.log("Post image: ", image);
-      newPost = await Post.create({
+      newPost = await POST.create({
         author: req.userId,
         description,
         image: image?.secure_url,
       });
     } else {
-      newPost = await Post.create({
+      newPost = await POST.create({
         author: req.userId,
         description,
       });
@@ -106,5 +107,50 @@ export const getPost = async (req, res) => {
 export const updateLike = async (req, res) => {
   try {
     let postId = req.params.id;
-  } catch (error) {}
+    let userId = req.userId;
+
+    let post = await POST.findById({ postId });
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    if (post.likes.includes(userId)) {
+      post.likes.filter((id) => id != userId);
+    } else {
+      post.likes.push(userId);
+    }
+    await post.save();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateComment = async (req, res) => {
+  try {
+    let postId = req.params.id;
+    let userId = req.userId;
+    let content = req.body;
+
+    let post = await POST.findById({ postId });
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    let postComment = await findByIdAndUpdate(
+      postId,
+      {
+        $push: {
+          comment: {
+            content,
+            User: userId,
+          },
+        },
+      },
+      { new: true },
+    ).populate("comment.user", "firstName, lastName, profileImage, headline");
+
+    return res.status(200).json(postComment);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(error);
+  }
 };

@@ -4,7 +4,8 @@ import authenticateToken from "../middlewares/authenticateToken.js";
 import {
   createPost,
   getPost,
-  updateLiket,
+  updateLike,
+  updateComment,
 } from "../controllers/post.controller.js";
 const postRouter = express.Router();
 
@@ -19,6 +20,8 @@ postRouter.get("/getPost", authenticateToken, getPost);
 
 postRouter.get("/", authenticateToken, getPost);
 
-postRouter.get("/:id/like", authenticateToken, updateLike);
+postRouter.get("/like/:id", authenticateToken, updateLike);
+
+postRouter.post("/comment/:id", authenticateToken, updateComment);
 
 export default postRouter;
