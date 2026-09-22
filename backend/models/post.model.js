@@ -37,6 +37,15 @@ const postSchema = mongoose.Schema(
         },
       },
     ],
+    // ==========================================
+    // SHARE
+    // ==========================================
+
+    sharedPost: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post",
+      default: null,
+    },
   },
   {
     timestamps: true,

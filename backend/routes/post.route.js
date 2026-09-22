@@ -5,7 +5,8 @@ import {
   createPost,
   getPost,
   updateLike,
-  updateComment,
+  createComment,
+  getComments,
 } from "../controllers/post.controller.js";
 const postRouter = express.Router();
 
@@ -20,8 +21,11 @@ postRouter.get("/getPost", authenticateToken, getPost);
 
 postRouter.get("/", authenticateToken, getPost);
 
-postRouter.get("/like/:id", authenticateToken, updateLike);
+postRouter.post("/:id/like", authenticateToken, updateLike);
 
-postRouter.post("/comment/:id", authenticateToken, updateComment);
+//postRouter.post("/comment/:id", authenticateToken, updateComment);
+postRouter.post("/:id/comment", authenticateToken, createComment);
+
+postRouter.get("/:id/comment", authenticateToken, getComments);
 
 export default postRouter;

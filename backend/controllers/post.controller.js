@@ -67,7 +67,25 @@ export const getPost = async (req, res) => {
       })
       .limit(pageLimit + 1)
       .populate("author", "firstName lastName profileImage headline")
+      .populate("comment.user", "firstName lastName profileImage headline")
       .lean();
+
+    // ==========================================
+    // CHECK CURRENT USER LIKE
+    // ==========================================
+
+    const postsWithLikeStatus = posts.map((post) => {
+      const isLiked = req.userId
+        ? post.like?.some(
+            (userId) => userId.toString() === req.userId.toString(),
+          )
+        : false;
+
+      return {
+        ...post,
+        isLiked,
+      };
+    });
 
     const hasMore = posts.length > pageLimit;
 
@@ -106,51 +124,247 @@ export const getPost = async (req, res) => {
 
 export const updateLike = async (req, res) => {
   try {
-    let postId = req.params.id;
-    let userId = req.userId;
+    const postId = req.params.id;
+    const userId = req.userId;
+    console.log(postId, userId);
+    const post = await POST.findById(postId);
 
-    let post = await POST.findById({ postId });
     if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({
+        message: "Post not found",
+      });
     }
-    if (post.likes.includes(userId)) {
-      post.likes.filter((id) => id != userId);
+
+    const alreadyLiked = post.like.some(
+      (id) => id.toString() === userId.toString(),
+    );
+
+    if (alreadyLiked) {
+      // Unlike
+      post.like = post.like.filter((id) => id.toString() !== userId.toString());
     } else {
-      post.likes.push(userId);
+      // Like
+      post.like.push(userId);
     }
+
     await post.save();
+
+    return res.status(200).json({
+      message: alreadyLiked ? "Post unliked" : "Post liked",
+
+      liked: !alreadyLiked,
+
+      likeCount: post.like.length,
+    });
   } catch (error) {
-    console.log(error);
+    console.log("Update like error:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
 
-export const updateComment = async (req, res) => {
-  try {
-    let postId = req.params.id;
-    let userId = req.userId;
-    let content = req.body;
+// ==========================================
+// CREATE COMMENT
+// ==========================================
 
-    let post = await POST.findById({ postId });
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+export const createComment = async (req, res) => {
+  try {
+    const postId = req.params.id;
+
+    const userId = req.userId;
+
+    const { content } = req.body;
+
+    // ==========================================
+    // VALIDATION
+    // ==========================================
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({
+        success: false,
+
+        message: "Comment cannot be empty",
+      });
     }
 
-    let postComment = await findByIdAndUpdate(
-      postId,
-      {
-        $push: {
-          comment: {
-            content,
-            User: userId,
-          },
-        },
-      },
-      { new: true },
-    ).populate("comment.user", "firstName, lastName, profileImage, headline");
+    // ==========================================
+    // FIND POST
+    // ==========================================
 
-    return res.status(200).json(postComment);
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+
+        message: "Post not found",
+      });
+    }
+
+    // ==========================================
+    // ADD COMMENT
+    // ==========================================
+
+    post.comment.push({
+      content: content.trim(),
+
+      user: userId,
+    });
+
+    await post.save();
+
+    // ==========================================
+    // POPULATE COMMENT USER
+    // ==========================================
+
+    await post.populate({
+      path: "comment.user",
+
+      select: "firstName lastName profileImage headline",
+    });
+
+    // ==========================================
+    // GET NEW COMMENT
+    // ==========================================
+
+    const newComment = post.comment[post.comment.length - 1];
+
+    // ==========================================
+    // RESPONSE
+    // ==========================================
+
+    return res.status(201).json({
+      success: true,
+
+      message: "Comment added successfully",
+
+      comment: newComment,
+
+      commentCount: post.comment.length,
+    });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json(error);
+    console.log("Create comment error:", error);
+
+    return res.status(500).json({
+      success: false,
+
+      message: "Internal server error",
+    });
+  }
+};
+
+// ==========================================
+// GET COMMENTS
+// ==========================================
+
+export const getComments = async (req, res) => {
+  try {
+    const postId = req.params.id;
+
+    // ==========================================
+    // FIND ONLY THE REQUIRED POST
+    // ==========================================
+
+    const post = await Post.findById(postId)
+
+      .populate({
+        path: "comment.user",
+
+        select: "firstName lastName profileImage headline",
+      });
+
+    // ==========================================
+    // POST NOT FOUND
+    // ==========================================
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+
+        message: "Post not found",
+      });
+    }
+
+    // ==========================================
+    // RESPONSE
+    // ==========================================
+
+    return res.status(200).json({
+      success: true,
+
+      comments: post.comment || [],
+
+      commentCount: post.comment?.length || 0,
+    });
+  } catch (error) {
+    console.log("Get comments error:", error);
+
+    return res.status(500).json({
+      success: false,
+
+      message: "Internal server error",
+    });
+  }
+};
+
+export const sharePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const userId = req.user._id;
+
+    // Find original post
+    const originalPost = await Post.findById(postId);
+
+    if (!originalPost) {
+      return res.status(404).json({
+        message: "Post not found",
+      });
+    }
+
+    // Prevent duplicate repost
+    const alreadyShared = await Post.findOne({
+      author: userId,
+      sharedPost: postId,
+    });
+
+    if (alreadyShared) {
+      return res.status(409).json({
+        message: "You have already shared this post",
+      });
+    }
+
+    // Create repost
+    const newPost = await Post.create({
+      author: userId,
+      description: "",
+      image: "",
+      sharedPost: postId,
+    });
+
+    // Return populated post
+    const populatedPost = await Post.findById(newPost._id)
+      .populate("author", "firstName lastName profileImage headline")
+      .populate({
+        path: "sharedPost",
+        populate: {
+          path: "author",
+          select: "firstName lastName profileImage headline",
+        },
+      });
+
+    return res.status(201).json({
+      message: "Post shared successfully",
+      post: populatedPost,
+    });
+  } catch (error) {
+    console.error("Share post error:", error);
+
+    return res.status(500).json({
+      message: "Failed to share post",
+      error: error.message,
+    });
   }
 };
