@@ -76,6 +76,76 @@ function PostCard({ post }) {
     const [loadingComments, setLoadingComments] =
         useState(false);
 
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [sharing, setSharing] = useState(false);
+
+    const handleShare = async () => {
+        try {
+            setSharing(true);
+
+            const response = await axios.post(
+                `${serverUrl}/v1/api/post/${post._id}/share`,
+                {},
+                {
+                    withCredentials: true,
+                }
+            );
+
+            console.log("Share response:", response.data);
+
+            alert("Post shared successfully");
+
+            setShowShareModal(false);
+
+        } catch (error) {
+            console.error(
+                "Share post error:",
+                error.response?.data || error
+            );
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to share post"
+            );
+        } finally {
+            setSharing(false);
+        }
+    };
+    const handleSharePost = async () => {
+        try {
+            setSharing(true);
+
+            const response = await axios.post(
+                `${serverUrl}/v1/api/post/${post._id}/share`,
+                {},
+                {
+                    withCredentials: true
+                }
+            );
+
+            console.log("Share response:", response.data);
+
+            // setShowShareModal(false);
+
+            //alert("Post shared successfully");
+
+        } catch (error) {
+
+            console.log(
+                "Share post error:",
+                error
+            );
+
+            if (error.response?.status === 409) {
+                alert("You have already shared this post");
+            } else {
+                alert("Failed to share post");
+            }
+
+        } finally {
+            setSharing(false);
+        }
+    };
 
     // ==========================================
     // GET ALL COMMENTS
@@ -425,7 +495,7 @@ function PostCard({ post }) {
                 <button
                     type="button"
                     className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-100"
-                >
+                    onClick={() => setShowShareModal(true)} >
 
                     <RiShareForwardLine
                         className="text-xl"
@@ -499,7 +569,111 @@ function PostCard({ post }) {
                 </form>
 
             </div>
+            {showShareModal && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
 
+                    <div className="bg-white w-full max-w-md rounded-xl shadow-xl">
+
+                        {/* HEADER */}
+                        <div className="flex items-center justify-between px-5 py-4 border-b">
+
+                            <h2 className="text-lg font-semibold">
+                                Share post
+                            </h2>
+
+                            <button
+                                type="button"
+                                onClick={() => setShowShareModal(false)}
+                                className="text-gray-500 hover:text-black text-xl"
+                            >
+                                ×
+                            </button>
+
+                        </div>
+
+                        {/* OPTIONS */}
+                        <div className="p-4">
+
+                            <button
+                                type="button"
+                                onClick={handleShare}
+                                disabled={sharing}
+                                className="w-full flex items-center gap-4 px-4 py-4 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                            >
+
+                                <RiShareForwardLine className="text-2xl" />
+
+                                <div className="text-left">
+                                    <p className="font-semibold">
+                                        {sharing ? "Sharing..." : "Repost"}
+                                    </p>
+
+                                    <p className="text-sm text-gray-500">
+                                        Share this post with your network
+                                    </p>
+                                </div>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
+
+            {post.sharedPost && (
+                <div className="px-4 pb-3">
+
+                    <div className="border rounded-lg overflow-hidden">
+
+                        {/* ORIGINAL POST AUTHOR */}
+                        <div className="flex items-center gap-3 p-3">
+
+                            <img
+                                src={
+                                    post.sharedPost.author?.profileImage ||
+                                    profile
+                                }
+                                alt="profile"
+                                className="w-10 h-10 rounded-full object-cover"
+                            />
+
+                            <div>
+
+                                <p className="font-semibold">
+                                    {post.sharedPost.author?.firstName}{" "}
+                                    {post.sharedPost.author?.lastName}
+                                </p>
+
+                                <p className="text-sm text-gray-500">
+                                    {post.sharedPost.author?.headline}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                        {/* ORIGINAL DESCRIPTION */}
+                        {post.sharedPost.description && (
+                            <p className="px-3 pb-3 text-gray-800 whitespace-pre-wrap">
+                                {post.sharedPost.description}
+                            </p>
+                        )}
+
+                        {/* ORIGINAL IMAGE */}
+                        {post.sharedPost.image && (
+                            <img
+                                src={post.sharedPost.image}
+                                alt="shared post"
+                                className="w-full max-h-[500px] object-cover"
+                            />
+                        )}
+
+                    </div>
+
+                </div>
+            )}
 
             {/* ==========================================
                 ALL COMMENTS
@@ -606,6 +780,8 @@ function PostCard({ post }) {
                 </div>
 
             )}
+
+
 
         </div>
     );

@@ -7,6 +7,7 @@ import {
   updateLike,
   createComment,
   getComments,
+  sharePost,
 } from "../controllers/post.controller.js";
 const postRouter = express.Router();
 
@@ -27,5 +28,7 @@ postRouter.post("/:id/like", authenticateToken, updateLike);
 postRouter.post("/:id/comment", authenticateToken, createComment);
 
 postRouter.get("/:id/comment", authenticateToken, getComments);
+
+postRouter.post("/:postId/share", authenticateToken, sharePost);
 
 export default postRouter;

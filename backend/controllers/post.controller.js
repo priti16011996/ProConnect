@@ -1,7 +1,7 @@
 import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import { uploadOnCloudinary } from "../middlewares/upload.js";
-import POST from "../models/post.model.js";
+//import POST from "../models/post.model.js";
 
 export const createPost = async (req, res) => {
   try {
@@ -104,7 +104,7 @@ export const getPost = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Posts fetched successfully",
-      posts,
+      posts: postsWithLikeStatus,
       pagination: {
         limit: pageLimit,
         hasMore,
@@ -127,7 +127,7 @@ export const updateLike = async (req, res) => {
     const postId = req.params.id;
     const userId = req.userId;
     console.log(postId, userId);
-    const post = await POST.findById(postId);
+    const post = await Post.findById(postId);
 
     if (!post) {
       return res.status(404).json({
@@ -313,7 +313,7 @@ export const sharePost = async (req, res) => {
   try {
     const { postId } = req.params;
 
-    const userId = req.user._id;
+    const userId = req.userId;
 
     // Find original post
     const originalPost = await Post.findById(postId);
