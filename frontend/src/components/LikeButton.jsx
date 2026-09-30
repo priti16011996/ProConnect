@@ -1,95 +1,26 @@
-import React, {
-    useState,
-    useContext,
-    useEffect
-} from "react";
+import React, { useState, useContext } from "react";
 
-import {
-    AiOutlineLike
-} from "react-icons/ai";
+import { AiOutlineLike } from "react-icons/ai";
 
 import axios from "axios";
 
-import {
-    AuthContextData
-} from "../context/AuthContext";
+import { AuthContextData } from "../context/AuthContext";
 
 
-function LikeButton({ post }) {
+function LikeButton({
+    post,
+    liked,
+    setLiked,
+    setLikeCount,
+    likeCount
+}) {
 
-    const {
-        serverUrl,
-        userData
-    } = useContext(AuthContextData);
-
-
-    // ==========================================
-    // CURRENT USER
-    // ==========================================
-
-    const currentUserId =
-        userData?.user?._id;
-
-
-    // ==========================================
-    // LIKE STATE
-    // ==========================================
-
-    const [liked, setLiked] =
-        useState(false);
-
-    const [likeCount, setLikeCount] =
-        useState(
-            post.like?.length || 0
-        );
+    const { serverUrl } =
+        useContext(AuthContextData);
 
     const [loading, setLoading] =
         useState(false);
 
-
-    // ==========================================
-    // CHECK LIKE AFTER POST / USER LOADS
-    // ==========================================
-
-    useEffect(() => {
-
-        if (!currentUserId) {
-            return;
-        }
-
-        const alreadyLiked =
-            post.like?.some(
-                (userId) =>
-                    userId?.toString() ===
-                    currentUserId?.toString()
-            ) || false;
-
-        setLiked(alreadyLiked);
-
-    }, [
-        post.like,
-        currentUserId
-    ]);
-
-
-    // ==========================================
-    // KEEP COUNT UPDATED
-    // ==========================================
-
-    useEffect(() => {
-
-        setLikeCount(
-            post.like?.length || 0
-        );
-
-    }, [
-        post.like
-    ]);
-
-
-    // ==========================================
-    // LIKE / UNLIKE
-    // ==========================================
 
     const handleLike = async () => {
 
@@ -101,15 +32,13 @@ function LikeButton({ post }) {
 
             setLoading(true);
 
-            const response =
-                await axios.post(
-                    `${serverUrl}/v1/api/post/${post._id}/like`,
-                    {},
-                    {
-                        withCredentials: true
-                    }
-                );
-
+            const response = await axios.post(
+                `${serverUrl}/v1/api/post/${post._id}/like`,
+                {},
+                {
+                    withCredentials: true
+                }
+            );
 
             console.log(
                 "Like response:",
@@ -117,10 +46,13 @@ function LikeButton({ post }) {
             );
 
 
+            // Update liked state
             setLiked(
                 response.data.liked
             );
 
+
+            // Update count
             setLikeCount(
                 response.data.likeCount
             );
@@ -130,7 +62,7 @@ function LikeButton({ post }) {
 
             console.log(
                 "Like error:",
-                error
+                error.response?.data || error
             );
 
         } finally {
@@ -163,13 +95,11 @@ function LikeButton({ post }) {
             />
 
             <span>
-                Like ({likeCount})
+                {likeCount === 1 ? "Like" : "Likes"}({likeCount})
             </span>
 
         </button>
-
     );
 }
-
 
 export default LikeButton;

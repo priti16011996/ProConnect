@@ -27,9 +27,9 @@ function ProfileCard() {
                 />
 
                 <img
-                    src={userData?.user?.coverImage || ""}
+                    src={userData?.user?.coverImage || null}
                     className="w-full h-[20vh] object-cover"
-                    alt="cover"
+                    alt=""
                 />
 
             </div>

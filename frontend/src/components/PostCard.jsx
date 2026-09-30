@@ -79,6 +79,19 @@ function PostCard({ post }) {
     const [showShareModal, setShowShareModal] = useState(false);
     const [sharing, setSharing] = useState(false);
 
+    const currentUserId = userData?.user?._id;
+
+    const [likeCount, setLikeCount] = useState(
+        post.like?.length || 0
+    );
+
+    const [liked, setLiked] = useState(
+        post.like?.some(
+            (id) =>
+                id?.toString() ===
+                currentUserId?.toString()
+        ) || false
+    );
     const handleShare = async () => {
         try {
             setSharing(true);
@@ -420,15 +433,7 @@ function PostCard({ post }) {
             <div className="flex justify-between items-center px-4 py-2 text-sm text-gray-500">
 
                 <span>
-
-                    {post.like?.length || 0}
-
-                    {" "}
-
-                    {post.like?.length === 1
-                        ? "Like"
-                        : "Likes"}
-
+                    {likeCount} {likeCount === 1 ? "Like" : "Likes"}
                 </span>
 
 
@@ -465,6 +470,10 @@ function PostCard({ post }) {
 
                 <LikeButton
                     post={post}
+                    liked={liked}
+                    setLiked={setLiked}
+                    setLikeCount={setLikeCount}
+                    likeCount={likeCount}
                 />
 
 
@@ -513,62 +522,63 @@ function PostCard({ post }) {
             {/* ==========================================
                 COMMENT INPUT
             ========================================== */}
+            {showComments && (
+                <div className="flex items-center gap-3 px-4 py-3 border-t">
 
-            <div className="flex items-center gap-3 px-4 py-3 border-t">
-
-                <form
-                    onSubmit={handleComment}
-                    className="flex items-center w-full gap-2"
-                >
-
-                    <img
-                        src={userData?.user?.profileImage || profile}
-                        alt="profile"
-                        className="w-8 h-8 rounded-full object-cover"
-                    />
-
-
-                    <input
-                        type="text"
-                        placeholder="Write a comment..."
-                        value={commentContent}
-                        onChange={(e) =>
-                            setCommentContent(
-                                e.target.value
-                            )
-                        }
-                        className="flex-1 bg-gray-100 rounded-full px-4 py-2 outline-none"
-                    />
-
-
-                    <button
-                        type="submit"
-                        disabled={
-                            !commentContent.trim() ||
-                            commenting
-                        }
-                        className="flex items-center justify-center text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+                    <form
+                        onSubmit={handleComment}
+                        className="flex items-center w-full gap-2"
                     >
 
-                        {commenting ? (
+                        <img
+                            src={userData?.user?.profileImage || profile}
+                            alt="profile"
+                            className="w-8 h-8 rounded-full object-cover"
+                        />
 
-                            <span className="text-sm">
-                                Posting...
-                            </span>
 
-                        ) : (
+                        <input
+                            type="text"
+                            placeholder="Write a comment..."
+                            value={commentContent}
+                            onChange={(e) =>
+                                setCommentContent(
+                                    e.target.value
+                                )
+                            }
+                            className="flex-1 bg-gray-100 rounded-full px-4 py-2 outline-none"
+                        />
 
-                            <FiSend
-                                className="w-[25px] h-[25px]"
-                            />
 
-                        )}
+                        <button
+                            type="submit"
+                            disabled={
+                                !commentContent.trim() ||
+                                commenting
+                            }
+                            className="flex items-center justify-center text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+                        >
 
-                    </button>
+                            {commenting ? (
 
-                </form>
+                                <span className="text-sm">
+                                    Posting...
+                                </span>
 
-            </div>
+                            ) : (
+
+                                <FiSend
+                                    className="w-[25px] h-[25px]"
+                                />
+
+                            )}
+
+                        </button>
+
+                    </form>
+
+                </div>
+            )}
             {showShareModal && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
 
@@ -694,7 +704,7 @@ function PostCard({ post }) {
 
                         </div>
 
-                    ) : comments.length === 0 ? (
+                    ) : comments.length == 0 ? (
 
                         <div className="text-center text-sm text-gray-500 py-4">
 
@@ -724,7 +734,6 @@ function PostCard({ post }) {
                                         alt="profile"
                                         className="w-9 h-9 rounded-full object-cover"
                                     />
-
 
                                     {/* COMMENT CONTENT */}
 

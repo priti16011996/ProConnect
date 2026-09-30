@@ -10,13 +10,13 @@ export const createPost = async (req, res) => {
     if (req.file) {
       let image = await uploadOnCloudinary(req.file.path);
       console.log("Post image: ", image);
-      newPost = await POST.create({
+      newPost = await Post.create({
         author: req.userId,
         description,
         image: image?.secure_url,
       });
     } else {
-      newPost = await POST.create({
+      newPost = await Post.create({
         author: req.userId,
         description,
       });
@@ -155,6 +155,7 @@ export const updateLike = async (req, res) => {
       liked: !alreadyLiked,
 
       likeCount: post.like.length,
+      post,
     });
   } catch (error) {
     console.log("Update like error:", error);
