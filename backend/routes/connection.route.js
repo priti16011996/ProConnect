@@ -1,5 +1,5 @@
 import express from "express";
-import authenticateToken from "../middlewares/authenticateToken";
+import authenticateToken from "../middlewares/authenticateToken.js";
 import {
   ConnectionRequest,
   acceptConnection,
@@ -8,7 +8,7 @@ import {
   getConnectionStatus,
   getConnectionRequests,
   getUserConnections,
-} from "../controllers/connection.controller";
+} from "../controllers/connection.controller.js";
 
 const connectionRouter = express.Router();
 

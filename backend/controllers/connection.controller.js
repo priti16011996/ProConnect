@@ -1,5 +1,7 @@
-import Connection from "../models/connection.model";
-import User from "../models/user.model";
+import Connection from "../models/connection.model.js";
+import User from "../models/user.model.js";
+import { io } from "../index.js";
+import { userSocketMap } from "../index.js";
 
 export const ConnectionRequest = async (req, res) => {
   try {
@@ -37,6 +39,23 @@ export const ConnectionRequest = async (req, res) => {
       sender: senderId,
       reciever: recieverId,
     });
+
+    let recieverSocketId = userSocketMap.get(recieverId);
+    let senderSocketId = userSocketMap.get(senderId);
+
+    if (recieverSocketId) {
+      io.to(recieverSocketId).emit("statusUpdate", {
+        updatedUserId: senderId,
+        newStatus: "recieved",
+      });
+    }
+
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("statusUpdate", {
+        updatedUserId: recieverId,
+        newStatus: "pending",
+      });
+    }
 
     return res
       .status(201)
@@ -207,10 +226,8 @@ export const getUserConnections = async (req, res) => {
     );
     return res.status(200).json(UserList);
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: `Failed to find total connected users due to error :${error}`,
-      });
+    return res.status(500).json({
+      message: `Failed to find total connected users due to error :${error}`,
+    });
   }
 };

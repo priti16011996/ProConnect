@@ -23,6 +23,10 @@ import axios from "axios";
 
 import { AuthContextData } from "../context/AuthContext";
 
+import { useEffect } from "react";
+
+import { socket } from "../socket.js";
+
 
 function PostCard({ post }) {
     const { userData, setUserData } = useContext(userContextData);
@@ -92,6 +96,69 @@ function PostCard({ post }) {
                 currentUserId?.toString()
         ) || false
     );
+    useEffect(() => {
+        const handleLikeUpdate = ({ postId, likes }) => {
+            // Only update this particular post
+            if (postId !== post._id) {
+                return;
+            }
+
+            setLikeCount(likes.length);
+
+            setLiked(
+                likes.some(
+                    (id) =>
+                        id?.toString() ===
+                        currentUserId?.toString()
+                )
+            );
+        };
+
+
+        socket.on("LikeUpdate", handleLikeUpdate);
+
+        return () => {
+            socket.off("LikeUpdate", handleLikeUpdate);
+        };
+    }, [post._id, currentUserId]);
+
+    useEffect(() => {
+        const handleCommentUpdate = ({
+            postId,
+            comment,
+            commentCount,
+        }) => {
+            // Only handle this post's comments
+            if (postId !== post._id) {
+                return;
+            }
+
+            // Update comment count
+            setCommentCount(commentCount);
+
+            // Add new comment to current comments
+            if (comment) {
+                setComments((prevComments) => {
+                    // Prevent duplicate comment
+                    const alreadyExists = prevComments.some(
+                        (item) => item._id === comment._id
+                    );
+
+                    if (alreadyExists) {
+                        return prevComments;
+                    }
+
+                    return [...prevComments, comment];
+                });
+            }
+        };
+
+        socket.on("CommentUpdate", handleCommentUpdate);
+
+        return () => {
+            socket.off("CommentUpdate", handleCommentUpdate);
+        };
+    }, [post._id]);
     const handleShare = async () => {
         try {
             setSharing(true);
@@ -236,7 +303,6 @@ function PostCard({ post }) {
     // ==========================================
 
     const handleComment = async (e) => {
-
         e.preventDefault();
 
         if (!commentContent.trim()) {
@@ -244,21 +310,16 @@ function PostCard({ post }) {
         }
 
         try {
-
             setCommenting(true);
 
             const response = await axios.post(
-
                 `${serverUrl}/v1/api/post/${post._id}/comment`,
-
                 {
                     content: commentContent.trim()
                 },
-
                 {
                     withCredentials: true
                 }
-
             );
 
             console.log(
@@ -266,56 +327,23 @@ function PostCard({ post }) {
                 response.data
             );
 
+            // Socket will update:
+            // - comments
+            // - commentCount
 
-            /*
-                Depending on your backend,
-                newly created comment may be:
-    
-                response.data.comment
-    
-                Change this if needed.
-            */
-
-            const newComment =
-                response.data.comment;
-
-
-            // Add new comment immediately
-            if (newComment) {
-
-                setComments((prev) => [
-                    ...prev,
-                    newComment
-                ]);
-
-            }
-
-
-            // Increase count
-            setCommentCount(
-                (prev) => prev + 1
-            );
-
-
-            // Clear input
             setCommentContent("");
 
-
-            // Automatically show comments
             setShowComments(true);
-
 
         } catch (error) {
 
             console.log(
                 "Comment error:",
-                error
+                error.response?.data || error
             );
 
         } finally {
-
             setCommenting(false);
-
         }
     };
 

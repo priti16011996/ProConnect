@@ -7,10 +7,20 @@ import cors from "cors"; // Import cors
 import userRouter from "./routes/user.route.js";
 import postRouter from "./routes/post.route.js";
 import connectionRouter from "./routes/connection.route.js";
+import http from "http";
+import { Server, Socket } from "socket.io";
 
 dotenv.config();
-
 const app = express();
+let server = http.createServer(app);
+const PORT = process.env.PORT || 5000;
+
+export const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173", // Replace with your frontend URL
+    credentials: true, // Allow credentials (cookies) to be sent
+  },
+});
 
 app.use(express.json());
 app.use(cookieParser()); // Use cookie-parser middleware to parse cookies
@@ -20,13 +30,29 @@ app.use(
     credentials: true, // Allow credentials (cookies) to be sent
   }),
 );
+export const userSocketMap = new Map();
+io.on("connection", (Socket) => {
+  console.log(`New User Connected with Socket Id: ${Socket.id}`);
+  Socket.on("userConnected", (userId) => {
+    userSocketMap.set(userId, Socket.id);
+  });
 
-app.listen(process.env.PORT, () => {
-  connectDB(); // Call the connectDB function to establish the database connection
-  console.log(`Server is running on port ${process.env.PORT}`);
+  io.on("disconnect", (Socket) => {
+    console.log(`New User disConnected with Socket Id: ${Socket.id}`);
+  });
 });
 
 app.use("/v1/api/auth", authRouter); // Use the authRouter for authentication routes
 app.use("/v1/api/user", userRouter); // Use the userRouter for user-related routes
 app.use("/v1/api/post", postRouter);
 app.use("/v1/api/connection", connectionRouter);
+
+server.listen(PORT, () => {
+  connectDB();
+  console.log(`Server is running on port: ${PORT}`);
+});
+
+// app.listen(process.env.PORT, () => {
+//   connectDB(); // Call the connectDB function to establish the database connection
+//   console.log(`Server is running on port ${process.env.PORT}`);
+// });

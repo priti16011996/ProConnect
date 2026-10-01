@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import { uploadOnCloudinary } from "../middlewares/upload.js";
+import { io } from "../index.js";
 //import POST from "../models/post.model.js";
 
 export const createPost = async (req, res) => {
@@ -148,7 +149,11 @@ export const updateLike = async (req, res) => {
     }
 
     await post.save();
-
+    io.emit("LikeUpdate", {
+      postId,
+      likes: post.like,
+      likeCount: post.like.length,
+    });
     return res.status(200).json({
       message: alreadyLiked ? "Post unliked" : "Post liked",
 
@@ -231,6 +236,12 @@ export const createComment = async (req, res) => {
     // ==========================================
 
     const newComment = post.comment[post.comment.length - 1];
+
+    io.emit("CommentUpdate", {
+      postId,
+      comment: newComment,
+      commentCount: post.comment.length,
+    });
 
     // ==========================================
     // RESPONSE
