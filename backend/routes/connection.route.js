@@ -12,20 +12,20 @@ import {
 
 const connectionRouter = express.Router();
 
-connectionRouter.get("/send/:id", authenticateToken, ConnectionRequest);
-connectionRouter.get(
+connectionRouter.post("/send/:id", authenticateToken, ConnectionRequest);
+connectionRouter.put(
   "/accept/:connectionId",
   authenticateToken,
   acceptConnection,
 );
 
-connectionRouter.get(
+connectionRouter.put(
   "/reject/:connectionId",
   authenticateToken,
   rejectConnection,
 );
 
-connectionRouter.get(
+connectionRouter.delete(
   "/remove/:connectionId",
   authenticateToken,
   removeConnection,

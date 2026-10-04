@@ -33,8 +33,10 @@ app.use(
 export const userSocketMap = new Map();
 io.on("connection", (Socket) => {
   console.log(`New User Connected with Socket Id: ${Socket.id}`);
+
   Socket.on("userConnected", (userId) => {
     userSocketMap.set(userId, Socket.id);
+    console.log(userSocketMap);
   });
 
   io.on("disconnect", (Socket) => {

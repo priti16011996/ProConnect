@@ -94,6 +94,26 @@ export const acceptConnection = async (req, res) => {
         connections: req.userId,
       },
     });
+
+    let recieverSocketId = userSocketMap.get(
+      connectionExist.reciever.toString(),
+    );
+    let senderSocketId = userSocketMap.get(connectionExist.sender.toString());
+
+    if (recieverSocketId) {
+      io.to(recieverSocketId).emit("statusUpdate", {
+        updatedUserId: connectionExist.sender,
+        newStatus: "disconnect",
+      });
+    }
+
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("statusUpdate", {
+        updatedUserId: connectionExist.reciever,
+        newStatus: "disconnect",
+      });
+    }
+
     return res
       .status(200)
       .json({ message: "Connection request send successfully" });
@@ -121,6 +141,7 @@ export const rejectConnection = async (req, res) => {
 
     connectionExist.status = "rejected";
     await connectionExist.save();
+
     return res
       .status(200)
       .json({ message: "Connection rejected successfully" });
@@ -188,6 +209,22 @@ export const removeConnection = async (req, res) => {
         connections: loggedInUserId,
       },
     });
+    let recieverSocketId = userSocketMap.get(removerUserId);
+    let senderSocketId = userSocketMap.get(loggedInUserId);
+
+    if (recieverSocketId) {
+      io.to(recieverSocketId).emit("statusUpdate", {
+        updatedUserId: loggedInUserId,
+        newStatus: "connect",
+      });
+    }
+
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("statusUpdate", {
+        updatedUserId: removerUserId,
+        newStatus: "connect",
+      });
+    }
 
     return res.status(200).json({ message: "Connection removed Successfully" });
   } catch (error) {
