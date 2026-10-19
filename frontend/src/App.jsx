@@ -6,6 +6,7 @@ import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 
 import { userContextData } from "./context/UserContext.jsx";
+import Network from "./components/Network.jsx";
 
 const App = () => {
 
@@ -43,6 +44,15 @@ const App = () => {
           userData
             ? <Navigate to="/" replace />
             : <Signup />
+        }
+      />
+
+      <Route
+        path="/network"
+        element={
+          userData
+            ? <Network />
+            : <Navigate to="/login" replace />
         }
       />
 

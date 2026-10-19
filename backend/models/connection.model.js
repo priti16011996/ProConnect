@@ -1,12 +1,16 @@
 import mongoose from "mongoose";
 
-const connectionSchema = mongoose.Schema(
+const connectionSchema = new mongoose.Schema(
   {
     sender: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     reciever: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     status: {
       type: String,
@@ -14,7 +18,7 @@ const connectionSchema = mongoose.Schema(
       default: "pending",
     },
   },
-  { timestamp: true },
+  { timestamps: true },
 );
 
 const Connection = mongoose.model("Connection", connectionSchema);

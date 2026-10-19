@@ -9,6 +9,7 @@ const authenticateToken = async (req, res, next) => {
         .json({ message: "Access denied. No token provided." });
     }
     let validToken = await jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Valid token:", validToken);
     if (!validToken) {
       return res.status(403).json({ message: "Unautherised token" });
     }

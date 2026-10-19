@@ -26,6 +26,7 @@ import { AuthContextData } from "../context/AuthContext";
 import { useEffect } from "react";
 
 import { socket } from "../socket.js";
+import ConnectionBtn from "./ConnectionBtn.jsx";
 
 
 function PostCard({ post }) {
@@ -393,7 +394,7 @@ function PostCard({ post }) {
                     </p>
 
                 </div>
-
+                {userData?.user?._id != post?.author?._id && <ConnectionBtn userId={post?.author?._id} />}
             </div>
 
 

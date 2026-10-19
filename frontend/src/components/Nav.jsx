@@ -8,12 +8,14 @@ import profile from '../assets/profile.png'
 import { userContextData } from '../context/UserContext';
 import { AuthContextData } from '../context/AuthContext';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 
 function Nav() {
     const { userData, setUserData } = useContext(userContextData);
     const [showPopup, setShowPopup] = useState(false);
     let { serverUrl } = useContext(AuthContextData);
+    const navigate = useNavigate();
 
     const handleLogout = async () => {
         try {
@@ -71,7 +73,7 @@ function Nav() {
                             <button className='flex justify-center items-center w-[100%] h-[40px]  rounded-full border-[2px] mt-3 border-[#a4ccdd] text-[#a4ccdd]'>View Profile</button>
                         </div>
                         <div className='w-full h-[1px] bg-gray-700 mt-3' ></div>
-                        <div className="flex justify-start items-center gap-[10px] p-3">
+                        <div className="flex justify-start items-center gap-[10px] p-3" onClick={() => { navigate("/network") }}>
                             <FaUserFriends className='w-[25px] h-[25px]' />
                             <div>My Network</div>
                         </div>
@@ -83,17 +85,17 @@ function Nav() {
                     </div>
                 }
 
-                <div className="lg:flex flex-col items-center hidden">
+                <div className="lg:flex flex-col items-center hidden cursor-pointer" onClick={() => { navigate("/") }}>
                     <IoHome />
                     <div>Home</div>
                 </div>
 
-                <div className="lg:flex flex-col items-center hidden">
+                <div className="lg:flex flex-col items-center hidden cursor-pointer" onClick={() => { navigate("/network") }}>
                     <FaUserFriends />
                     <div>My Network</div>
                 </div>
 
-                <div className="flex flex-col items-center">
+                <div className="flex flex-col items-center cursor-pointer">
                     <MdNotificationsActive />
                     <div className='hidden md:block'>Notifications</div>
                 </div>
