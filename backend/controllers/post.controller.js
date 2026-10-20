@@ -380,3 +380,57 @@ export const sharePost = async (req, res) => {
     });
   }
 };
+
+export const getUserPosts = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
+
+    const posts = await Post.find({ author: userId })
+      .sort({ createdAt: -1 })
+      .populate("author", "firstName lastName userName profileImage");
+
+    return res.status(200).json({
+      message: "User posts fetched successfully",
+      totalPosts: posts.length,
+      posts,
+    });
+  } catch (error) {
+    console.error("Error fetching user posts:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch user posts",
+      error: error.message,
+    });
+  }
+};
+
+export const getPostById = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const post = await Post.findById(postId).populate(
+      "author",
+      "firstName lastName userName profileImage headline",
+    );
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found",
+      });
+    }
+
+    return res.status(200).json({ post });
+  } catch (error) {
+    console.error("Error fetching post:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch post",
+    });
+  }
+};

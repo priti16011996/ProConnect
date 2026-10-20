@@ -70,10 +70,10 @@ function Nav() {
                             <span>{userData.user.firstName} {userData.user.lastName}</span>
                         </div>
                         <div>
-                            <button className='flex justify-center items-center w-[100%] h-[40px]  rounded-full border-[2px] mt-3 border-[#a4ccdd] text-[#a4ccdd]'>View Profile</button>
+                            <button className='flex justify-center items-center w-[100%] h-[40px]  rounded-full border-[2px] mt-3 border-[#a4ccdd] text-[#a4ccdd]' onClick={() => { navigate("/profile") }}>View Profile</button>
                         </div>
                         <div className='w-full h-[1px] bg-gray-700 mt-3' ></div>
-                        <div className="flex justify-start items-center gap-[10px] p-3" onClick={() => { navigate("/network") }}>
+                        <div className="flex justify-start items-center gap-[10px] p-3 cursor-pointer" onClick={() => { navigate("/network") }}>
                             <FaUserFriends className='w-[25px] h-[25px]' />
                             <div>My Network</div>
                         </div>

@@ -7,6 +7,8 @@ import Signup from "./pages/Signup.jsx";
 
 import { userContextData } from "./context/UserContext.jsx";
 import Network from "./components/Network.jsx";
+import Profile from "./components/Profile.jsx";
+import ViewPost from "./components/ViewPost";
 
 const App = () => {
 
@@ -55,6 +57,17 @@ const App = () => {
             : <Navigate to="/login" replace />
         }
       />
+
+      <Route
+        path="/profile"
+        element={
+          userData
+            ? <Profile />
+            : <Navigate to="/login" replace />
+        }
+      />
+
+      <Route path="/post/:postId" element={userData ? <ViewPost /> : <Navigate to="/login" replace />} />
 
     </Routes>
   );

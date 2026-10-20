@@ -56,7 +56,7 @@ function ProfileCard() {
             {/* Plus Icon */}
             <GoPlusCircle
                 className="absolute left-[100px] top-[150px] bg-[#438ac8] rounded-full text-white w-[22px] h-[22px]"
-            />
+                onClick={() => setEdit(true)} />
 
 
             {/* User Name */}
