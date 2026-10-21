@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from "react";
 import logo from '../assets/logo.png';
 import { IoSearch } from "react-icons/io5";
 import { IoHome } from "react-icons/io5";
@@ -14,8 +14,61 @@ import { useNavigate } from 'react-router-dom';
 function Nav() {
     const { userData, setUserData } = useContext(userContextData);
     const [showPopup, setShowPopup] = useState(false);
+    const [searchText, setSearchText] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [showResults, setShowResults] = useState(false);
+
     let { serverUrl } = useContext(AuthContextData);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const query = searchText.trim();
+
+        if (!query) {
+            setSearchResults([]);
+            setShowResults(false);
+            setSearchLoading(false);
+            return;
+        }
+
+        let cancelled = false;
+
+        const timer = setTimeout(async () => {
+            try {
+                setSearchLoading(true);
+
+                const response = await axios.get(
+                    `${serverUrl}/v1/api/user/search`,
+                    {
+                        params: { q: query },
+                        withCredentials: true,
+                    }
+                );
+
+                if (!cancelled) {
+                    setSearchResults(response.data.users || []);
+                    setShowResults(true);
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    setSearchResults([]);
+                    setShowResults(true);
+                }
+
+                console.error("Search users error:", error);
+            } finally {
+                if (!cancelled) {
+                    setSearchLoading(false);
+                }
+            }
+        }, 300);
+
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
+    }, [searchText, serverUrl]);
 
     const handleLogout = async () => {
         try {
@@ -43,16 +96,80 @@ function Nav() {
                 />
 
 
-                <div className={`flex items-center bg-[#E5E4E2] rounded-full px-4}`}>
-                    <IoSearch className="w-[25px] h-[25px] ml-2" />
+                <div className="relative">
+                    <div className="flex items-center bg-[#E5E4E2] rounded-full px-3">
+                        <IoSearch className="w-[22px] h-[22px] shrink-0" />
 
-                    <form>
                         <input
                             type="text"
-                            placeholder="Search Here"
-                            className="bg-transparent  w-[140px] lg:w-[300px] p-[7px] outline-none"
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            onFocus={() => {
+                                if (searchText.trim()) setShowResults(true);
+                            }}
+                            placeholder="Search users..."
+                            className="bg-transparent w-[140px] lg:w-[300px] p-[7px] outline-none"
                         />
-                    </form>
+
+                        {searchText && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSearchText("");
+                                    setSearchResults([]);
+                                    setShowResults(false);
+                                }}
+                                className="text-gray-500 px-1"
+                                aria-label="Clear search"
+                            >
+                                ×
+                            </button>
+                        )}
+                    </div>
+
+                    {showResults && searchText.trim() && (
+                        <div className="absolute left-0 top-full mt-2 w-[280px] lg:w-[350px] max-h-[350px] overflow-y-auto rounded-lg bg-white shadow-xl border border-gray-200 z-[60]">
+
+                            {searchLoading ? (
+                                <p className="p-4 text-sm text-gray-500">
+                                    Searching users...
+                                </p>
+                            ) : searchResults.length > 0 ? (
+                                searchResults.map((person) => (
+                                    <button
+                                        key={person._id}
+                                        type="button"
+                                        onClick={() => {
+                                            setShowResults(false);
+                                            setSearchText("");
+                                            navigate(`/profile/${person._id}`);
+                                        }}
+                                        className="flex items-center gap-3 w-full p-3 text-left hover:bg-gray-100"
+                                    >
+                                        <img
+                                            src={person.profileImage || profile}
+                                            alt=""
+                                            className="w-11 h-11 rounded-full object-cover shrink-0"
+                                        />
+
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-sm truncate">
+                                                {person.firstName} {person.lastName}
+                                            </p>
+
+                                            <p className="text-xs text-gray-500 truncate">
+                                                {person.headline || person.userName || "User"}
+                                            </p>
+                                        </div>
+                                    </button>
+                                ))
+                            ) : (
+                                <p className="p-4 text-sm text-gray-500">
+                                    No users found.
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
             <div className="flex ml-auto items-center gap-[20px] ">
