@@ -3,6 +3,8 @@ import {
   loggedInUser,
   uploadProfileImage,
   updateProfile,
+  getUserById,
+  searchUsers,
 } from "../controllers/user.controller.js";
 import authenticateToken from "../middlewares/authenticateToken.js";
 import upload from "../middlewares/upload.js";
@@ -14,7 +16,8 @@ userRouter.get("/currentUser", authenticateToken, loggedInUser);
 //   upload.single("profileImage"),
 //   uploadProfileImage,
 // );
-
+userRouter.get("/search", authenticateToken, searchUsers);
+userRouter.get("/:userId", authenticateToken, getUserById);
 userRouter.put(
   "/updateProfile",
 

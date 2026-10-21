@@ -27,10 +27,19 @@ import { useEffect } from "react";
 
 import { socket } from "../socket.js";
 import ConnectionBtn from "./ConnectionBtn.jsx";
+import { useNavigate } from "react-router-dom";
+
 
 
 function PostCard({ post }) {
     const { userData, setUserData } = useContext(userContextData);
+    const navigate = useNavigate();
+
+    const handleProfileClick = (clickedUserId) => {
+        if (clickedUserId) {
+            navigate(`/profile/${clickedUserId}`);
+        }
+    };
     // ==========================================
     // POST DESCRIPTION
     // ==========================================
@@ -367,6 +376,7 @@ function PostCard({ post }) {
                     }
                     alt="profile"
                     className="w-12 h-12 rounded-full object-cover"
+                    onClick={() => handleProfileClick(post.author._id)}
                 />
 
                 <div className="flex-1">

@@ -1,19 +1,85 @@
 
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import Nav from "./Nav";
 import { AuthContextData } from "../context/AuthContext";
 import { userContextData } from "../context/UserContext";
 import { FaCamera, FaPen } from "react-icons/fa";
 import EditProfile from "./EditProfile";
 import MyPost from "./MyPost";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import ConnectionBtn from "./ConnectionBtn";
+
 
 function Profile() {
+    const { userId: profileId } = useParams();
+
     const { serverUrl } = useContext(AuthContextData);
     const { userData, edit, setEdit } = useContext(userContextData);
-    const [showEdit, setShowEdit] = useState(false);
-    console.log("userData in Profile component:", userData.user);
-    const user = userData.user || {};
 
+    const [profileUser, setProfileUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const fetchProfile = async () => {
+            setLoading(true);
+            setError("");
+
+            try {
+                if (!profileId) {
+                    if (!cancelled) {
+                        setProfileUser(userData?.user || null);
+                    }
+                    return;
+                }
+
+                const response = await axios.get(
+                    `${serverUrl}/v1/api/user/${profileId}`,
+                    { withCredentials: true }
+                );
+
+                if (!cancelled) {
+                    setProfileUser(response.data.user);
+                }
+            } catch (err) {
+                if (!cancelled) {
+                    setProfileUser(null);
+                    setError("Unable to load this profile.");
+                }
+                console.error("Error fetching profile:", err);
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchProfile();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [profileId, serverUrl, userData?.user]);
+
+    if (loading) {
+        return <div className="p-6">Loading profile...</div>;
+    }
+
+    if (error || !profileUser) {
+        return (
+            <div className="p-6">
+                {error || "Profile not found."}
+            </div>
+        );
+    }
+
+    const user = profileUser;
+
+    const isOwnProfile =
+        String(user._id) === String(userData?.user?._id);
     const fullName =
         `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
         user.userName ||
@@ -23,7 +89,7 @@ function Profile() {
         <div className="min-h-screen bg-[#f3f2ef]">
             <Nav />
 
-            <main className="max-w-[1000px] mx-auto px-4 py-6 mt-10">
+            <main className="max-w-[1000px] mx-auto px-4 py-6 mt-[70px]">
                 <section className="bg-white rounded-lg shadow-sm overflow-hidden">
                     {/* Cover image */}
                     <div className="relative h-40 sm:h-52 bg-gray-900">
@@ -68,15 +134,18 @@ function Profile() {
                         </div>
 
                         {/* Edit profile button */}
-                        <div className="flex justify-end -mt-2 mb-3">
+                        {isOwnProfile && (
                             <button
                                 type="button"
-                                className="flex items-center gap-2 px-5 py-2 rounded-full border border-sky-600 text-sky-700 font-medium hover:bg-sky-50"
-                                onClick={() => setEdit(true)} >
+                                onClick={() => setEdit(true)}
+                                className="flex items-center gap-2 px-5 py-2 rounded-full
+                   border border-sky-600 text-sky-700 font-medium"
+                            >
                                 Edit Profile
                                 <FaPen size={13} />
                             </button>
-                        </div>
+                        )}
+
 
                         {/* User information */}
                         <div>
@@ -92,7 +161,7 @@ function Profile() {
                                 {user.location || "Add your location"}
                             </p>
 
-                            <p className="mt-2 text-sm font-medium text-gray-600">
+                            <p className="mt-2 text-sm font-medium text-gray-600 mb-2">
                                 {user.connections?.length || 0} connections
                             </p>
                         </div>
@@ -227,8 +296,7 @@ function Profile() {
             </main>
 
             {/* Temporary edit dialog */}
-            {edit && (
-                <EditProfile />)}
+            {isOwnProfile && edit && <EditProfile />}
         </div>
     );
 }

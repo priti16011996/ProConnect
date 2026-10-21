@@ -66,6 +66,14 @@ const App = () => {
             : <Navigate to="/login" replace />
         }
       />
+      <Route
+        path="/profile/:userId"
+        element={
+          userData
+            ? <Profile />
+            : <Navigate to="/login" replace />
+        }
+      />
 
       <Route path="/post/:postId" element={userData ? <ViewPost /> : <Navigate to="/login" replace />} />
 

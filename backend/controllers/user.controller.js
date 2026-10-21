@@ -134,3 +134,55 @@ export const uploadProfileImage = async (req, res) => {
     });
   }
 };
+
+export const getUserById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch user profile",
+    });
+  }
+};
+
+export const searchUsers = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || !q.trim()) {
+      return res.status(200).json({ users: [] });
+    }
+
+    const searchText = q.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    const users = await User.find({
+      $or: [
+        { firstName: { $regex: searchText, $options: "i" } },
+        { lastName: { $regex: searchText, $options: "i" } },
+        { userName: { $regex: searchText, $options: "i" } },
+      ],
+    })
+      .select("_id firstName lastName userName profileImage headline")
+      .limit(10);
+
+    res.status(200).json({ users });
+  } catch (error) {
+    console.error("Search users error:", error);
+
+    res.status(500).json({
+      message: "Failed to search users",
+    });
+  }
+};
