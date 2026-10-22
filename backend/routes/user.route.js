@@ -5,6 +5,7 @@ import {
   updateProfile,
   getUserById,
   searchUsers,
+  getSuggestedUsers,
 } from "../controllers/user.controller.js";
 import authenticateToken from "../middlewares/authenticateToken.js";
 import upload from "../middlewares/upload.js";
@@ -17,6 +18,7 @@ userRouter.get("/currentUser", authenticateToken, loggedInUser);
 //   uploadProfileImage,
 // );
 userRouter.get("/search", authenticateToken, searchUsers);
+userRouter.get("/suggested", authenticateToken, getSuggestedUsers);
 userRouter.get("/:userId", authenticateToken, getUserById);
 userRouter.put(
   "/updateProfile",

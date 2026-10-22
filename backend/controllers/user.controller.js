@@ -1,5 +1,5 @@
 import User from "../models/user.model.js";
-
+import Connection from "../models/connection.model.js";
 import fs from "fs/promises";
 import cloudinary from "../config/cloudinary.js";
 import { uploadOnCloudinary } from "../middlewares/upload.js";
@@ -183,6 +183,65 @@ export const searchUsers = async (req, res) => {
 
     res.status(500).json({
       message: "Failed to search users",
+    });
+  }
+};
+
+export const getSuggestedUsers = async (req, res) => {
+  console.log("getSuggestedUsers called for user:", req.userId);
+  try {
+    const currentUserId = String(req.userId);
+
+    // Get all connection records involving the logged-in user
+    const connections = await Connection.find({
+      $or: [{ sender: currentUserId }, { reciever: currentUserId }],
+    }).lean();
+    console.log("Connections involving the logged-in user:", connections);
+    // Map each other user ID to a connection status
+    const connectionMap = new Map();
+
+    for (const connection of connections) {
+      const senderId = String(connection.sender);
+      const receiverId = String(connection.reciever);
+
+      const otherUserId = senderId === currentUserId ? receiverId : senderId;
+
+      let status;
+
+      if (connection.status === "accepted") {
+        status = "connected";
+      } else if (connection.status === "pending") {
+        status =
+          senderId === currentUserId ? "pending_sent" : "pending_received";
+      } else if (connection.status === "rejected") {
+        status = "rejected";
+      }
+
+      if (status) {
+        connectionMap.set(otherUserId, status);
+      }
+    }
+
+    // Fetch users except yourself
+    const users = await User.find({
+      _id: { $ne: currentUserId },
+    })
+      .select("_id firstName lastName userName profileImage headline")
+      .limit(100)
+      .lean();
+
+    // Attach status to each user
+    const result = users.map((user) => ({
+      ...user,
+      connectionStatus: connectionMap.get(String(user._id)) || "connect",
+    }));
+
+    return res.status(200).json({ users: result });
+  } catch (error) {
+    console.error("getSuggestedUsers error:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch users",
     });
   }
 };

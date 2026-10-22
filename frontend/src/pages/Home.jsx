@@ -5,6 +5,7 @@ import CreatePost from "../components/createPost";
 import PostFeed from "../components/PostFeed";
 import { userContextData } from "../context/UserContext";
 import ProfileCard from "../components/ProfileCard";
+import SuggestedUsers from "../components/SuggestedUsers";
 
 
 
@@ -36,6 +37,7 @@ function Home() {
 
             {/* RIGHT */}
             <div className="w-full lg:w-[25%] min-h-[300px] bg-white shadow-lg lg:mt-[80px]">
+                <SuggestedUsers />
             </div>
 
         </div>
