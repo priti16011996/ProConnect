@@ -8,7 +8,7 @@ export const getNotifications = async (req, res) => {
 
     return res.status(200).json(notifications);
   } catch (error) {
-    console.error("Error fetching notifications:", error.message);
+    console.error("Error fetching notifications: ", error.message);
     return res.status(500).json({
       message: "Failed to fetch notifications",
       error: error.message,
