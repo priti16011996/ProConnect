@@ -1,27 +1,51 @@
-import React, { useContext, useState, useEffect } from "react";
-import logo from '../assets/logo.png';
-import { IoSearch } from "react-icons/io5";
-import { IoHome } from "react-icons/io5";
+
+import React, {
+    useContext,
+    useState,
+    useEffect,
+    useRef,
+} from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+
+import logo from "../assets/logo.png";
+import profile from "../assets/profile.png";
+
+import { IoSearch, IoHome } from "react-icons/io5";
 import { FaUserFriends } from "react-icons/fa";
 import { MdNotificationsActive } from "react-icons/md";
-import profile from '../assets/profile.png'
-import { userContextData } from '../context/UserContext';
-import { AuthContextData } from '../context/AuthContext';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
+import { userContextData } from "../context/UserContext";
+import { AuthContextData } from "../context/AuthContext";
 
 function Nav() {
     const { userData, setUserData } = useContext(userContextData);
+    const { serverUrl } = useContext(AuthContextData);
+    const navigate = useNavigate();
+    const location = useLocation();
+
     const [showPopup, setShowPopup] = useState(false);
     const [searchText, setSearchText] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [searchLoading, setSearchLoading] = useState(false);
     const [showResults, setShowResults] = useState(false);
 
-    let { serverUrl } = useContext(AuthContextData);
-    const navigate = useNavigate();
+    const profilePopupRef = useRef(null);
+    const profileButtonRef = useRef(null);
+    const searchRef = useRef(null);
 
+    const currentUser = userData?.user;
+
+    const isActive = (path) => {
+        if (path === "/profile") {
+            return location.pathname === "/profile" ||
+                location.pathname.startsWith("/profile/");
+        }
+
+        return location.pathname === path;
+    };
+
+    // Search users with debounce
     useEffect(() => {
         const query = searchText.trim();
 
@@ -70,45 +94,116 @@ function Nav() {
         };
     }, [searchText, serverUrl]);
 
+    // Close popup and search when clicking outside
+    useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (
+                profilePopupRef.current &&
+                !profilePopupRef.current.contains(event.target) &&
+                profileButtonRef.current &&
+                !profileButtonRef.current.contains(event.target)
+            ) {
+                setShowPopup(false);
+            }
+
+            if (
+                searchRef.current &&
+                !searchRef.current.contains(event.target)
+            ) {
+                setShowResults(false);
+            }
+        };
+
+        const handleEscape = (event) => {
+            if (event.key === "Escape") {
+                setShowPopup(false);
+                setShowResults(false);
+            }
+        };
+
+        document.addEventListener("pointerdown", handleOutsideClick);
+        document.addEventListener("keydown", handleEscape);
+
+        return () => {
+            document.removeEventListener("pointerdown", handleOutsideClick);
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, []);
+
+    const closePopupAndNavigate = (path) => {
+        setShowPopup(false);
+        setShowResults(false);
+        navigate(path);
+    };
+
     const handleLogout = async () => {
         try {
-            let result = await axios.get(`${serverUrl}/v1/api/auth/logout`, { withCredentials: true });
+            await axios.get(
+                `${serverUrl}/v1/api/auth/logout`,
+                { withCredentials: true }
+            );
+
             setUserData(null);
-            console.log(result);
-
+            setShowPopup(false);
+            navigate("/login");
         } catch (error) {
-            console.log(error);
+            console.error("Logout error:", error);
         }
-    }
+    };
 
-    const handleProfilePopup = () => {
-        setShowPopup(prev => !prev);
+    const handleSearchUser = (person) => {
+        setSearchText("");
+        setSearchResults([]);
+        setShowResults(false);
+        navigate(`/profile/${person._id}`);
     };
 
     return (
-        <div className="w-full h-[60px] bg-white shadow-lg fixed top-0 flex justify-start items-center z-50 left-0">
+        <header className="fixed top-0 left-0 z-50 w-full h-16
+            bg-white shadow-md border-b border-gray-100">
 
-            <div className="flex items-center gap-[10px]">
-                <img
-                    src={logo}
-                    alt="Logo"
-                    className="w-[85px] h-[85px] object-contain cursor-pointer"
-                />
+            <div className="relative mx-auto flex h-full w-full max-w-[1440px]
+                items-center gap-2 px-2 sm:gap-4 sm:px-5 lg:px-8">
 
+                {/* Logo */}
+                <button
+                    type="button"
+                    onClick={() => closePopupAndNavigate("/")}
+                    className="flex shrink-0 items-center justify-center"
+                    aria-label="Go to home"
+                >
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        className="h-10 w-10 object-contain sm:h-12 sm:w-12"
+                    />
+                </button>
 
-                <div className="relative">
-                    <div className="flex items-center bg-[#E5E4E2] rounded-full px-3">
-                        <IoSearch className="w-[22px] h-[22px] shrink-0" />
+                {/* Search */}
+                <div
+                    ref={searchRef}
+                    className="relative min-w-0 flex-1 max-w-md"
+                >
+                    <div className="flex h-10 w-full items-center gap-2
+                        rounded-full bg-gray-100 px-3
+                        focus-within:ring-2 focus-within:ring-blue-200">
+
+                        <IoSearch className="h-5 w-5 shrink-0 text-gray-600" />
 
                         <input
                             type="text"
                             value={searchText}
                             onChange={(e) => setSearchText(e.target.value)}
                             onFocus={() => {
-                                if (searchText.trim()) setShowResults(true);
+                                if (searchText.trim()) {
+                                    setShowResults(true);
+                                }
                             }}
-                            placeholder="Search users..."
-                            className="bg-transparent w-[140px] lg:w-[300px] p-[7px] outline-none"
+                            placeholder="Search..."
+                            aria-label="Search users"
+                            className="w-full min-w-0 bg-transparent
+                                text-sm outline-none placeholder:text-gray-500
+                                sm:text-base"
                         />
 
                         {searchText && (
@@ -119,16 +214,22 @@ function Nav() {
                                     setSearchResults([]);
                                     setShowResults(false);
                                 }}
-                                className="text-gray-500 px-1"
+                                className="shrink-0 px-1 text-xl
+                                    text-gray-500 hover:text-gray-900"
                                 aria-label="Clear search"
                             >
-                                ×
+                                &times;
                             </button>
                         )}
                     </div>
 
+                    {/* Search dropdown */}
                     {showResults && searchText.trim() && (
-                        <div className="absolute left-0 top-full mt-2 w-[280px] lg:w-[350px] max-h-[350px] overflow-y-auto rounded-lg bg-white shadow-xl border border-gray-200 z-[60]">
+                        <div className="absolute left-0 top-full mt-2
+                            max-h-[min(350px,60vh)]
+                            w-[min(350px,calc(100vw-1rem))]
+                            overflow-y-auto rounded-xl border
+                            border-gray-200 bg-white shadow-xl">
 
                             {searchLoading ? (
                                 <p className="p-4 text-sm text-gray-500">
@@ -139,26 +240,30 @@ function Nav() {
                                     <button
                                         key={person._id}
                                         type="button"
-                                        onClick={() => {
-                                            setShowResults(false);
-                                            setSearchText("");
-                                            navigate(`/profile/${person._id}`);
-                                        }}
-                                        className="flex items-center gap-3 w-full p-3 text-left hover:bg-gray-100"
+                                        onClick={() => handleSearchUser(person)}
+                                        className="flex w-full min-w-0 items-center
+                                            gap-3 p-3 text-left
+                                            hover:bg-gray-50"
                                     >
                                         <img
                                             src={person.profileImage || profile}
                                             alt=""
-                                            className="w-11 h-11 rounded-full object-cover shrink-0"
+                                            className="h-10 w-10 shrink-0
+                                                rounded-full object-cover"
                                         />
 
-                                        <div className="min-w-0">
-                                            <p className="font-semibold text-sm truncate">
-                                                {person.firstName} {person.lastName}
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm
+                                                font-semibold text-gray-800">
+                                                {person.firstName}{" "}
+                                                {person.lastName}
                                             </p>
 
-                                            <p className="text-xs text-gray-500 truncate">
-                                                {person.headline || person.userName || "User"}
+                                            <p className="truncate text-xs
+                                                text-gray-500">
+                                                {person.headline ||
+                                                    person.userName ||
+                                                    "User"}
                                             </p>
                                         </div>
                                     </button>
@@ -171,61 +276,174 @@ function Nav() {
                         </div>
                     )}
                 </div>
-            </div>
-            <div className="flex ml-auto items-center gap-[20px] ">
-                {
-                    showPopup &&
-                    <div className='w-[320px] min-h-[300px] bg-white absolute shadow-lg top-[63px] p-[5px]'>
-                        <div className='w-12 h-12 flex justify-center items-center cursor-pointer ml-[130px]'>
+
+                {/* Navigation links */}
+                <nav className="ml-auto flex shrink-0 items-center
+                    gap-3 sm:gap-5 md:gap-6"
+                    aria-label="Main navigation">
+
+                    <button
+                        type="button"
+                        onClick={() => closePopupAndNavigate("/")}
+                        className={`flex flex-col items-center justify-center gap-0.5
+        transition-colors
+        ${isActive("/")
+                                ? "text-blue-700 border-b-2 border-blue-700"
+                                : "text-gray-600 hover:text-blue-700"
+                            }`}
+                        aria-label="Home"
+                        aria-current={isActive("/") ? "page" : undefined}
+                    >
+                        <IoHome className="h-5 w-5 sm:h-6 sm:w-6" />
+                        <span className="hidden text-xs lg:block">Home</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => closePopupAndNavigate("/network")}
+                        className={`flex flex-col items-center justify-center gap-0.5
+    transition-colors
+    ${isActive("/network")
+                                ? "text-blue-700 border-b-2 border-blue-700"
+                                : "text-gray-600 hover:text-blue-700"
+                            }`}
+                        aria-label="My Network"
+                    >
+                        <FaUserFriends className="h-5 w-5 sm:h-6 sm:w-6" />
+                        <span className="hidden text-xs lg:block">
+                            Network
+                        </span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            closePopupAndNavigate("/notification")
+                        }
+                        className={`flex flex-col items-center justify-center gap-0.5
+    transition-colors
+    ${isActive("/notification")
+                                ? "text-blue-700 border-b-2 border-blue-700"
+                                : "text-gray-600 hover:text-blue-700"
+                            }`}
+                        aria-label="Notifications"
+                    >
+                        <MdNotificationsActive
+                            className="h-6 w-6 sm:h-7 sm:w-7"
+                        />
+                        <span className="hidden text-xs md:block">
+                            Notifications
+                        </span>
+                    </button>
+
+                    {/* Profile button */}
+                    <button
+                        ref={profileButtonRef}
+                        type="button"
+                        onClick={() => setShowPopup((prev) => !prev)}
+                        className={`h-9 w-9 shrink-0 overflow-hidden rounded-full
+    sm:h-10 sm:w-10
+    ${isActive("/profile")
+                                ? "ring-2 ring-blue-600 ring-offset-2"
+                                : "border border-gray-200"
+                            }`}
+                        aria-label="Open profile menu"
+                        aria-expanded={showPopup}
+                    >
+                        <img
+                            src={currentUser?.profileImage || profile}
+                            alt="Profile"
+                            className="h-full w-full object-cover"
+                        />
+                    </button>
+                </nav>
+
+                {/* Responsive profile popup */}
+                {showPopup && (
+                    <div
+                        ref={profilePopupRef}
+                        className="absolute right-2 top-[calc(100%+8px)]
+                            z-[60] w-[min(320px,calc(100vw-1rem))]
+                            rounded-xl border border-gray-200
+                            bg-white p-4 shadow-xl sm:right-5"
+                    >
+                        <button
+                            type="button"
+                            onClick={() => setShowPopup(false)}
+                            aria-label="Close profile menu"
+                            className="absolute right-3 top-2
+                                text-2xl leading-none text-gray-500
+                                hover:text-gray-900"
+                        >
+                            &times;
+                        </button>
+
+                        <div className="flex flex-col items-center pt-3">
                             <img
-                                src={userData?.user?.profileImage || profile}
-                                alt="profile"
-                                className="w-full h-full rounded-full object-cover"
+                                src={currentUser?.profileImage || profile}
+                                alt="Profile"
+                                className="h-16 w-16 rounded-full
+                                    object-cover"
                             />
-                        </div>
-                        <div className='flex justify-center items-center'>
-                            <span>{userData.user.firstName} {userData.user.lastName}</span>
-                        </div>
-                        <div>
-                            <button className='flex justify-center items-center w-[100%] h-[40px]  rounded-full border-[2px] mt-3 border-[#a4ccdd] text-[#a4ccdd]' onClick={() => { navigate("/profile") }}>View Profile</button>
-                        </div>
-                        <div className='w-full h-[1px] bg-gray-700 mt-3' ></div>
-                        <div className="flex justify-start items-center gap-[10px] p-3 cursor-pointer" onClick={() => { navigate("/network") }}>
-                            <FaUserFriends className='w-[25px] h-[25px]' />
-                            <div>My Network</div>
-                        </div>
-                        <div>
-                            <button className='flex justify-center items-center w-[100%] h-[40px]  rounded-full border-[2px]
-                         mt-3 border-[#ec4545] text-[#ec4545] cursor-pointer' onClick={handleLogout}>Logout</button>
+
+                            <p className="mt-2 max-w-full break-words
+                                text-center font-semibold text-gray-800">
+                                {currentUser
+                                    ? `${currentUser.firstName || ""} ${currentUser.lastName || ""
+                                        }`.trim()
+                                    : "My Account"}
+                            </p>
+
+                            {currentUser?.headline && (
+                                <p className="mt-1 text-center text-xs
+                                    text-gray-500">
+                                    {currentUser.headline}
+                                </p>
+                            )}
                         </div>
 
+                        <button
+                            type="button"
+                            onClick={() =>
+                                closePopupAndNavigate("/profile")
+                            }
+                            className="mt-4 h-10 w-full rounded-full
+                                border border-blue-300 font-medium
+                                text-blue-700 transition
+                                hover:bg-blue-50"
+                        >
+                            View Profile
+                        </button>
+
+                        <div className="my-3 border-t border-gray-200" />
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                closePopupAndNavigate("/network")
+                            }
+                            className="flex min-h-11 w-full items-center
+                                gap-3 rounded-lg px-2 text-left
+                                text-gray-700 hover:bg-gray-100"
+                        >
+                            <FaUserFriends className="h-5 w-5 shrink-0" />
+                            <span>My Network</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="mt-2 h-10 w-full rounded-full
+                                border border-red-300 font-medium
+                                text-red-600 transition
+                                hover:bg-red-50"
+                        >
+                            Logout
+                        </button>
                     </div>
-                }
-
-                <div className="lg:flex flex-col items-center hidden cursor-pointer" onClick={() => { navigate("/") }}>
-                    <IoHome />
-                    <div>Home</div>
-                </div>
-
-                <div className="lg:flex flex-col items-center hidden cursor-pointer" onClick={() => { navigate("/network") }}>
-                    <FaUserFriends />
-                    <div>My Network</div>
-                </div>
-
-                <div className="flex flex-col items-center cursor-pointer">
-                    <MdNotificationsActive />
-                    <div className='hidden md:block'>Notifications</div>
-                </div>
-                <div className="w-12 h-12 flex flex-col items-center cursor-pointer mr-2" onClick={handleProfilePopup}>
-                    <img
-                        src={userData?.user?.profileImage || profile}
-                        alt="profile"
-                        className=" w-full h-full rounded-full object-cover"
-                    />
-                </div>
+                )}
             </div>
-
-        </div >
+        </header>
     );
 }
 

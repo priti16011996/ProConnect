@@ -2,6 +2,7 @@ import Connection from "../models/connection.model.js";
 import User from "../models/user.model.js";
 import { io } from "../index.js";
 import { userSocketMap } from "../index.js";
+import Notification from "../models/Notification.model.js";
 
 export const ConnectionRequest = async (req, res) => {
   try {
@@ -124,6 +125,11 @@ export const acceptConnection = async (req, res) => {
 
     // Update connection status
     connectionExist.status = "accepted";
+    let notification = Notification.create({
+      reciever: connectionExist.sender,
+      type: "connectionAccept",
+      relatedUser: userId,
+    });
     await connectionExist.save();
 
     const senderId = connectionExist.sender.toString();

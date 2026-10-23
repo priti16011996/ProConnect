@@ -29,6 +29,11 @@ const ConnectionBtn = ({ userId }) => {
                 `${serverUrl}/v1/api/connection/getStatus/${userId}`,
                 { withCredentials: true }
             );
+            console.log({
+                currentUserId,
+                profileUserId: userId,
+                status: response.data.status,
+            });
 
             setStatus(response.data.status || "connect");
         } catch (error) {

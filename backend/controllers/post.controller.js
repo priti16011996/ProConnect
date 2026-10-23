@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import { uploadOnCloudinary } from "../middlewares/upload.js";
 import { io } from "../index.js";
+import Notification from "../models/Notification.model.js";
 //import POST from "../models/post.model.js";
 
 export const createPost = async (req, res) => {
@@ -146,6 +147,14 @@ export const updateLike = async (req, res) => {
     } else {
       // Like
       post.like.push(userId);
+      if (post.author != userId) {
+        let notification = Notification.create({
+          reciever: post.author,
+          type: "like",
+          relatedUser: userId,
+          relatedPost: postId,
+        });
+      }
     }
 
     await post.save();
@@ -242,6 +251,14 @@ export const createComment = async (req, res) => {
       comment: newComment,
       commentCount: post.comment.length,
     });
+    if (post.author != userId) {
+      let notification = Notification.create({
+        reciever: post.author,
+        type: "comment",
+        relatedUser: userId,
+        relatedPost: postId,
+      });
+    }
 
     // ==========================================
     // RESPONSE

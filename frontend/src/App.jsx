@@ -9,6 +9,7 @@ import { userContextData } from "./context/UserContext.jsx";
 import Network from "./components/Network.jsx";
 import Profile from "./components/Profile.jsx";
 import ViewPost from "./components/ViewPost";
+import Notification from "./components/Notification.jsx";
 
 const App = () => {
 
@@ -76,6 +77,8 @@ const App = () => {
       />
 
       <Route path="/post/:postId" element={userData ? <ViewPost /> : <Navigate to="/login" replace />} />
+
+      <Route path="/notification" element={userData ? <Notification /> : <Navigate to="/login" replace />} />
 
     </Routes>
   );

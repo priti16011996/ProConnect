@@ -7,6 +7,7 @@ import cors from "cors"; // Import cors
 import userRouter from "./routes/user.route.js";
 import postRouter from "./routes/post.route.js";
 import connectionRouter from "./routes/connection.route.js";
+import noticationRouter from "./routes/notification.route.js";
 import http from "http";
 import { Server, Socket } from "socket.io";
 
@@ -48,6 +49,7 @@ app.use("/v1/api/auth", authRouter); // Use the authRouter for authentication ro
 app.use("/v1/api/user", userRouter); // Use the userRouter for user-related routes
 app.use("/v1/api/post", postRouter);
 app.use("/v1/api/connection", connectionRouter);
+app.use("/v1/api/notification", noticationRouter);
 
 server.listen(PORT, () => {
   connectDB();
