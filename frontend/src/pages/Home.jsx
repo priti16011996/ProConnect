@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import Nav from "../components/Nav";
 import EditProfile from "../components/EditProfile";
-import CreatePost from "../components/createPost";
+import CreatePost from "../components/CreatePost";
 import PostFeed from "../components/PostFeed";
 import { userContextData } from "../context/UserContext";
 import ProfileCard from "../components/ProfileCard";
