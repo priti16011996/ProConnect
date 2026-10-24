@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000;
 
 export const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Replace with your frontend URL
+    origin: "https://proconnect-1-dm7h.onrender.com", // Replace with your frontend URL
     credentials: true, // Allow credentials (cookies) to be sent
   },
 });
@@ -27,7 +27,7 @@ app.use(express.json());
 app.use(cookieParser()); // Use cookie-parser middleware to parse cookies
 app.use(
   cors({
-    origin: "http://localhost:5173", // Replace with your frontend URL
+    origin: "https://proconnect-1-dm7h.onrender.com", // Replace with your frontend URL
     credentials: true, // Allow credentials (cookies) to be sent
   }),
 );
