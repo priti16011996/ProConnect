@@ -1,23 +1,34 @@
 import jwt from "jsonwebtoken";
 
-const authenticateToken = async (req, res, next) => {
+const authenticateToken = (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const token = req.cookies?.token;
+
     if (!token) {
-      return res
-        .status(401)
-        .json({ message: "Access denied. No token provided." });
+      return res.status(401).json({
+        message: "Access denied. No token provided.",
+      });
     }
-    let validToken = await jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Valid token:", validToken);
-    if (!validToken) {
-      return res.status(403).json({ message: "Unautherised token" });
-    }
-    req.userId = validToken.userId;
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.userId = decoded.userId;
     next();
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    if (
+      error.name === "JsonWebTokenError" ||
+      error.name === "TokenExpiredError"
+    ) {
+      return res.status(401).json({
+        message: "Invalid or expired token.",
+      });
+    }
+
+    console.error("Authentication error:", error.message);
+
+    return res.status(500).json({
+      message: "Internal server error.",
+    });
   }
 };
 
