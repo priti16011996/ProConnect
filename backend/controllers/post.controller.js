@@ -2,7 +2,7 @@ import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
 import { uploadOnCloudinary } from "../middlewares/upload.js";
 import { io } from "../index.js";
-import Notification from "../models/Notification.model.js";
+import Notification from "../models/notification.model.js";
 //import POST from "../models/post.model.js";
 
 export const createPost = async (req, res) => {

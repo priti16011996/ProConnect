@@ -2,7 +2,7 @@ import Connection from "../models/connection.model.js";
 import User from "../models/user.model.js";
 import { io } from "../index.js";
 import { userSocketMap } from "../index.js";
-import Notification from "../models/Notification.model.js";
+import Notification from "../models/notification.model.js";
 
 export const ConnectionRequest = async (req, res) => {
   try {
